@@ -117,7 +117,7 @@ extension Request {
             url = urlComponents?.url ?? url
         }
         
-        let proxy = "http://localhost:8080/proxy?url="
+        let proxy = "http://localhost:8001/proxy?url="
         guard let proxyUrl = URL(string: "\(proxy)\(url.absoluteString)") else {
             return nil
         }

@@ -31,6 +31,8 @@ final class SimpleProxy {
     }
     
     func configure(_ app: Application) throws {
+        app.http.server.configuration.port = 8001
+
 //        app.post("unix", use: unix)
         app.get("proxy", use: proxy)
         app.post("proxy", use: proxy)

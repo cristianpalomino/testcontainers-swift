@@ -26,8 +26,8 @@ final class ListImages: AsyncOperation, Request {
             switch result {
             case let .success(images):
                 self.images = images
-            case let .failure(failure):
-                print("\(#function)\n\(failure.localizedDescription)")
+            case let .failure(error):
+                fatalError(error.localizedDescription)
             }
         }
     }

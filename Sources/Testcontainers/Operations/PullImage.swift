@@ -11,12 +11,12 @@ final class PullImage: AsyncOperation, Request {
     let body: EmptyBody? = nil
     typealias Response = String
     
-    var imageName: String?
-    
     var host: String = "http://localhost:2377"
     var path: String = "/images/create"
     var method: HTTPMethod = .post
     var query: [String : String]?
+    
+    private(set) var imageName: String?
     
     init(name: String) {
         self.query = ["fromImage": name,
@@ -31,14 +31,11 @@ final class PullImage: AsyncOperation, Request {
             switch result {
             case .success:
                 guard let name = self.query?["fromImage"], let tag = self.query?["tag"] else {
-                    print("An error happened generating the Docker Image name...!")
-                    return
+                    fatalError("An error happened generating the image name")
                 }
-                
                 self.imageName = "\(name):\(tag)"
-                print("Docker Image created successfully...!")
-            case let .failure(failure):
-                print("An error happened creating the Docker Image... \n \(failure.localizedDescription)!")
+            case let .failure(error):
+                fatalError(error.localizedDescription)
             }
         }
     }

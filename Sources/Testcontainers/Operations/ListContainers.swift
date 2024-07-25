@@ -27,7 +27,7 @@ final class ListContainers: AsyncOperation, Request {
             case let .success(containers):
                 self.containers = containers
             case let .failure(error):
-                print("\(#file)\n\(error.localizedDescription)")
+                fatalError(error.localizedDescription)
             }
         }
     }

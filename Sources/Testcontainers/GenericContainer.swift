@@ -30,37 +30,38 @@ public final class GenericContainer {
         server.stop()
     }
     
-    public func create(_ completion: (() -> Void)? = nil) {
+    public func start(_ completion: ((Int) -> Void)? = nil) {
         let pullImage = PullImage(name: name)
+        let createContainer = CreateContainer(exposedPort: port)
+        let startContainer = StartContainer()
+        let getContainer = GetContainer(exposedPort: port)
         
-        let createContainer = CreateContainer(port: port)
+        pullImage.completionBlock = {
+            createContainer.imageName = pullImage.imageName
+        }
+
         createContainer.completionBlock = { [weak self] in
             guard let self else { return }
             self.id = createContainer.containerId
-            completion?()
+            startContainer.containerId = createContainer.containerId
+            getContainer.containerId = createContainer.containerId
         }
-        
-        createContainer.addDependency(pullImage)
-        let queue = OperationQueue()
-        let operations = [pullImage, createContainer]
-        queue.addOperations(operations, waitUntilFinished: false)
-    }
-    
-    public func start(_ completion: ((Int) -> Void)? = nil) {
-        guard let id = id else { return }
-        let startContainer = StartContainer(containerId: id)
-        
-        let getContainer = GetContainer(containerId: id, port: port)
+
         getContainer.completionBlock = {
-            guard let hostPort = getContainer.containerPort, let intPort = Int(hostPort) else {
-                fatalError("ContainerPort not found...!")
+            guard let port = getContainer.port,
+                  let intPort = Int(port) else {
+                fatalError("ContainerPort not found")
             }
             completion?(intPort)
         }
         
+        createContainer.addDependency(pullImage)
+        startContainer.addDependency(createContainer)
         getContainer.addDependency(startContainer)
+        
         let queue = OperationQueue()
-        let operations = [startContainer, getContainer]
+        queue.maxConcurrentOperationCount = 1
+        let operations = [pullImage, createContainer, startContainer, getContainer]
         queue.addOperations(operations, waitUntilFinished: false)
     }
     

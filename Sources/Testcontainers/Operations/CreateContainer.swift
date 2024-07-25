@@ -16,29 +16,27 @@ final class CreateContainer: AsyncOperation, Request {
     }
     
     var body: ContainerConfig?
-    var containerId: String?
-    var port: Int
-    
     var host: String = "http://localhost:2377"
     var path: String = "/containers/create"
     var method: HTTPMethod = .post
     
-    init(port: Int) {
-        self.port = port
+    var imageName: String?
+    private(set) var containerId: String?
+    private let exposedPort: Int
+    
+    init(exposedPort: Int) {
+        self.exposedPort = exposedPort
     }
     
     override func main() {
-        guard let imageName = (dependencies.first as? PullImage)?.imageName else {
-            finish()
-            return
+        guard let imageName = imageName else {
+            fatalError("Unable to create the container, missing the image name")
         }
         
         let portBinding = PortBinding(hostPort: "0")
-        let portBindings = ["\(port)/tcp": [portBinding]]
+        let portBindings = ["\(exposedPort)/tcp": [portBinding]]
         let hostConfig = HostConfig(portBindings: portBindings, capAdd: ["NET_ADMIN"])
         body = ContainerConfig(image: imageName, hostConfig: hostConfig)
-        
-        print("Creating Docker Container \(imageName)")
         
         URLSession.shared.send(self) { [weak self] result in
             guard let self else { return }
@@ -47,9 +45,8 @@ final class CreateContainer: AsyncOperation, Request {
             switch result {
             case let .success(response):
                 self.containerId = response.Id
-                print("Docker Container created successfully...!")
             case let .failure(error):
-                print("An error happened creating the Docker Container...! \n\(error.localizedDescription)")
+                fatalError(error.localizedDescription)
             }
         }
     }

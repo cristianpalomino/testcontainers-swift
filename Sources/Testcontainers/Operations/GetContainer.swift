@@ -16,18 +16,20 @@ final class GetContainer: AsyncOperation, Request {
     var method: HTTPMethod = .get
     var parameters: [String: String]?
     
-    var containerPort: String?
-    let containerId: String
-    let port: Int
+    var port: String?
+    var containerId: String?
+    private let exposedPort: Int
     
-    init(containerId: String, port: Int) {
-        self.port = port
+    init(containerId: String? = nil, exposedPort: Int) {
+        self.exposedPort = exposedPort
         self.containerId = containerId
-        self.parameters = ["id": containerId]
     }
     
     override func main() {
-        print("Fetching Docker container information, Id: \(containerId)")
+        guard let id = containerId else {
+            fatalError("Unable to start the container, missing the container id")
+        }
+        parameters = ["id": id]
         
         URLSession.shared.send(self) { [weak self] result in
             guard let self else { return }
@@ -35,10 +37,9 @@ final class GetContainer: AsyncOperation, Request {
             
             switch result {
             case let .success(response):
-                containerPort = response.networkSettings.ports?["\(port)/tcp"]??.first?.hostPort
-                print("Docker container host...!\n\(containerPort)")
+                self.port = response.networkSettings.ports?["\(exposedPort)/tcp"]??.first?.hostPort
             case let .failure(error):
-                print("An error happened fetching the Docker container information...!\n\(error.localizedDescription)")
+                fatalError(error.localizedDescription)
             }
         }
     }

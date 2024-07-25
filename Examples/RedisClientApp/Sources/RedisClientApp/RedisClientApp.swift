@@ -12,7 +12,7 @@ final class RedisClientApp {
     let redisConfig: RedisConfig
     
     init(
-        redisConfig: RedisConfig = RedisConfig(host: "localhost", port: 55003) // Official redis server
+        redisConfig: RedisConfig = RedisConfig(host: "localhost", port: 00000) // Official redis server
     ) throws {
         self.redisConfig = redisConfig
         self.app = Application(.testing)

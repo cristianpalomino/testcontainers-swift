@@ -1,5 +1,5 @@
 //
-//  StartContainer.swift
+//  StopContainer.swift
 //
 //
 //  Created by cristian on 16/07/24.
@@ -7,12 +7,12 @@
 
 import Foundation
 
-final class StartContainer: AsyncOperation, Request {
+final class StopContainer: AsyncOperation, Request {
     let body: EmptyBody? = nil
     typealias Response = String
     
     var host: String = "http://localhost:2377"
-    var path: String = "/containers/:id/start"
+    var path: String = "/containers/:id/stop"
     var method: HTTPMethod = .post
     var parameters: [String: String]?
     
@@ -24,8 +24,6 @@ final class StartContainer: AsyncOperation, Request {
     }
     
     override func main() {
-        print("Starting Docker container Id: \(containerId)")
-        
         URLSession.shared.send(self) { [weak self] result in
             guard let self else { return }
             defer { finish() }
@@ -33,9 +31,9 @@ final class StartContainer: AsyncOperation, Request {
             switch result {
             case let .success(string):
                 print(string)
-                print("Docker container started...!")
+                print("Docker container stopped...!")
             case let .failure(error):
-                print("An error happened starting the Docker Image...!\n\(error.localizedDescription)")
+                fatalError(error.localizedDescription)
             }
         }
     }
