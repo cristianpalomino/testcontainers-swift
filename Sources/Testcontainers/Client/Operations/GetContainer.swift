@@ -11,7 +11,6 @@ final class GetContainer: AsyncOperation, Request {
     let body: EmptyBody? = nil
     typealias Response = DockerContainer
     
-    var host: String = "http://localhost:2377"
     var path: String = "/containers/:id/json"
     var method: HTTPMethod = .get
     var parameters: [String: String]?

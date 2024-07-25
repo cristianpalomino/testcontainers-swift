@@ -1,5 +1,5 @@
 //
-//  StartContainer.swift
+//  RemoveContainer.swift
 //
 //
 //  Created by cristian on 16/07/24.
@@ -7,26 +7,25 @@
 
 import Foundation
 
-final class StartContainer: AsyncOperation, Request {
+final class RemoveContainer: AsyncOperation, Request {
     let body: EmptyBody? = nil
     typealias Response = String
     
-    var host: String = "http://localhost:2377"
-    var path: String = "/containers/:id/start"
-    var method: HTTPMethod = .post
+    var path: String = "/containers/:id"
+    var method: HTTPMethod = .delete
     var parameters: [String: String]?
+    var query: [String: String]?
     
-    var containerId: String?
+    let containerId: String
     
-    init(containerId: String? = nil) {
+    init(containerId: String) {
         self.containerId = containerId
+        self.parameters = ["id": containerId]
+        self.query = ["v": "false", "force": "true"]
     }
     
     override func main() {
-        guard let id = containerId else {
-            fatalError("Unable to start the container, missing the container id")
-        }
-        parameters = ["id": id]
+        print("Removing Docker container Id: \(containerId)")
         
         URLSession.shared.send(self) { [weak self] result in
             guard let self else { return }
@@ -35,6 +34,7 @@ final class StartContainer: AsyncOperation, Request {
             switch result {
             case let .success(string):
                 print(string)
+                print("Docker container removed...!")
             case let .failure(error):
                 fatalError(error.localizedDescription)
             }

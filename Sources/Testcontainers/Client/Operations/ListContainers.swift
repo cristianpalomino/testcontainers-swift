@@ -11,7 +11,6 @@ final class ListContainers: AsyncOperation, Request {
     let body: EmptyBody? = nil
     typealias Response = [DockerContainer]
     
-    var host: String = "http://localhost:2377"
     var path: String = "/containers/json"
     var method: HTTPMethod = .get
     var query: [String: String]? = ["all": "true"]

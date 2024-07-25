@@ -8,10 +8,9 @@
 import Foundation
 
 final class StopContainer: AsyncOperation, Request {
-    let body: EmptyBody? = nil
+    typealias Body = EmptyBody
     typealias Response = String
     
-    var host: String = "http://localhost:2377"
     var path: String = "/containers/:id/stop"
     var method: HTTPMethod = .post
     var parameters: [String: String]?

@@ -11,6 +11,8 @@ public final class TestContainersHelper {
 
 public final class GenericContainer {
     
+    static let uuid = UUID().uuidString
+    
     var id: String?
     let name: String
     let port: Int

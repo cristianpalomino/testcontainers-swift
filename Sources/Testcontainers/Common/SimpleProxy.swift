@@ -34,6 +34,7 @@ final class SimpleProxy {
         app.http.server.configuration.port = 8001
 
 //        app.post("unix", use: unix)
+//        app.get("proxy", use: unix)
         app.get("proxy", use: proxy)
         app.post("proxy", use: proxy)
         app.delete("proxy", use: proxy)

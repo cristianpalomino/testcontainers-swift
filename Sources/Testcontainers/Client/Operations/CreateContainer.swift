@@ -16,7 +16,6 @@ final class CreateContainer: AsyncOperation, Request {
     }
     
     var body: ContainerConfig?
-    var host: String = "http://localhost:2377"
     var path: String = "/containers/create"
     var method: HTTPMethod = .post
     

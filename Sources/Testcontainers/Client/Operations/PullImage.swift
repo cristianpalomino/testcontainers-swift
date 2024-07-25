@@ -11,7 +11,6 @@ final class PullImage: AsyncOperation, Request {
     let body: EmptyBody? = nil
     typealias Response = String
     
-    var host: String = "http://localhost:2377"
     var path: String = "/images/create"
     var method: HTTPMethod = .post
     var query: [String : String]?

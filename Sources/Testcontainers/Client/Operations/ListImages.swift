@@ -8,10 +8,9 @@
 import Foundation
 
 final class ListImages: AsyncOperation, Request {
-    let body: EmptyBody? = nil
+    typealias Body = EmptyBody
     typealias Response = [DockerImage]
     
-    var host: String = "http://localhost:2377"
     var path: String = "/images/json"
     var method: HTTPMethod = .get
     var query: [String: String]? = ["all": "true"]

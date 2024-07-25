@@ -17,18 +17,16 @@ final class RedisClientTests: XCTestCase {
         app.shutdown()
         try super.tearDownWithError()
     }
-
+    
     func test_runApp() throws {
         let expectation = expectation(description: "test_runApp")
-        container.create {
-            self.container.start { port in
-                do {
-                    let redisConfig = RedisConfig(host: "localhost", port: port)
-                    self.app = try RedisClientApp(redisConfig: redisConfig)
-                    try self.app.run()
-                } catch {
-                    XCTFail("Failed to run app: \(error)")
-                }
+        container.start { port in
+            do {
+                let redisConfig = RedisConfig(host: "localhost", port: port)
+                self.app = try RedisClientApp(redisConfig: redisConfig)
+                try self.app.run()
+            } catch {
+                XCTFail("Failed to run app: \(error)")
             }
         }
         waitForExpectations(timeout: 10000)
