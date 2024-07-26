@@ -191,15 +191,6 @@
         }
       },
       {
-        "package": "Testcontainers",
-        "repositoryURL": "/Users/cristian/Developer/testcontainers-swift",
-        "state": {
-          "branch": "main",
-          "revision": "715129ccc182086232a5ff0f6a2bef9b7795c8e5",
-          "version": null
-        }
-      },
-      {
         "package": "vapor",
         "repositoryURL": "https://github.com/vapor/vapor.git",
         "state": {

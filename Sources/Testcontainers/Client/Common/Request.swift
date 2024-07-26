@@ -114,7 +114,7 @@ extension Request {
         return [
             "Content-Type": "application/json",
             "User-Agent": "tc-swift/1.0.0",
-            "X-tc-sid": ""
+            "X-tc-sid": GenericContainer.uuid
         ]
     }
     
@@ -186,6 +186,7 @@ extension Request {
         headers.forEach { header in
             request.setValue(header.value, forHTTPHeaderField: header.key)
         }
+        print("Headers: \(request.allHTTPHeaderFields)")
         request.httpBody = encode(body)
         return request
     }
