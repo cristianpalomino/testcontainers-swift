@@ -1,88 +1,60 @@
 import Foundation
-
-public final class TestContainersHelper {
-    
-    public class func clean() {
-        let server = SimpleProxy()
-        try? server.start()
-        server.stop()
-    }
-}
+import AsyncHTTPClient
+import Combine
 
 public final class GenericContainer {
     
     static let uuid = UUID().uuidString
     
-    var id: String?
-    let name: String
-    let port: Int
+    private let name: String
+    private let configuration: ContainerConfig
     
-    private let server = SimpleProxy()
+    private let docker: Docker
+    private var container: Docker.Container?
+    private var image: Docker.Image?
+    private var cancellables = Set<AnyCancellable>()
     
-    public init(
-        name: String,
-        port: Int
-    ) throws {
+    init(name: String, configuration: ContainerConfig, docker: Docker) {
+        self.docker = docker
         self.name = name
-        self.port = port
-        try server.start()
+        self.configuration = configuration
     }
     
-    deinit {
-        server.stop()
+    convenience init(name: String, port: Int) {
+        let configuration: ContainerConfig = .build(image: name, exposed: port)
+        let docker = Docker(client: HTTPClient.shared)
+        self.init(name: name, configuration: configuration, docker: docker)
     }
     
-    public func start(_ completion: ((Int) -> Void)? = nil) {
-        let pullImage = PullImage(name: name)
-        let createContainer = CreateContainer(exposedPort: port)
-        let startContainer = StartContainer()
-        let getContainer = GetContainer(exposedPort: port)
-        
-        pullImage.completionBlock = {
-            createContainer.imageName = pullImage.imageName
-        }
-
-        createContainer.completionBlock = { [weak self] in
-            guard let self else { return }
-            self.id = createContainer.containerId
-            startContainer.containerId = createContainer.containerId
-            getContainer.containerId = createContainer.containerId
-        }
-
-        getContainer.completionBlock = {
-            guard let port = getContainer.port,
-                  let intPort = Int(port) else {
-                fatalError("ContainerPort not found")
+    public func start() -> AnyPublisher<ContainerInspectInfo, Error> {
+        return docker.pull(image: name)
+            .handleEvents(receiveOutput: { image in
+                self.image = image
+            })
+            .flatMap { _ in
+                self.docker.create(container: self.configuration)
             }
-            completion?(intPort)
+            .handleEvents(receiveOutput: { container in
+                self.container = container
+            })
+            .flatMap { container in
+                container.start().map { container }
+            }
+            .flatMap { container in
+                container.inspect()
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    func stop() -> AnyPublisher<Void, Error> {
+        guard let container = container else {
+            return Fail(error: "Container not found").eraseToAnyPublisher()
         }
         
-        createContainer.addDependency(pullImage)
-        startContainer.addDependency(createContainer)
-        getContainer.addDependency(startContainer)
-        
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        let operations = [pullImage, createContainer, startContainer, getContainer]
-        queue.addOperations(operations, waitUntilFinished: false)
-    }
-    
-    public func stop(_ completion: (() -> Void)? = nil) {
-        guard let id = id else { return }
-        let stopContainer = StopContainer(containerId: id)
-        stopContainer.completionBlock = { completion?() }
-        let queue = OperationQueue()
-        queue.addOperations([stopContainer], waitUntilFinished: false)
-    }
-    
-    public func clean(_ completion: (() -> Void)? = nil) {
-        guard let id = id else { return }
-        let stopContainer = StopContainer(containerId: id)
-        let removeContainer = RemoveContainer(containerId: id)
-        removeContainer.completionBlock = { completion?() }
-        removeContainer.addDependency(stopContainer)
-        let queue = OperationQueue()
-        let operations = [stopContainer, removeContainer]
-        queue.addOperations(operations, waitUntilFinished: false)
+        return container.kill()
+            .flatMap { _ in
+                container.remove()
+            }
+            .eraseToAnyPublisher()
     }
 }

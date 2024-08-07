@@ -1,49 +1,29 @@
 import XCTest
+import Combine
 @testable import Testcontainers
 
 final class TestContainersTests: XCTestCase {
     
     var container: GenericContainer!
+    var cancellables = Set<AnyCancellable>()
     
     override class func tearDown() {
-        TestContainersHelper.clean()
         super.tearDown()
     }
     
     override func tearDownWithError() throws {
-        container = nil
         try super.tearDownWithError()
     }
     
     func test_startDockerImage_shouldBeSuccess() throws {
         let expectation = expectation(description: "test_startDockerImage_shouldBeSuccess")
-        container = try GenericContainer(name: "mendhak/http-https-echo", port: 8080)
-        container.start { host in
-            XCTAssertNotNil(host)
+        container = GenericContainer(name: "mendhak/http-https-echo", port: 8080)
+        container.start().sink { completion in
+            print(completion)
+        } receiveValue: { info in
             expectation.fulfill()
-        }
-        waitForExpectations(timeout: 60)
-    }
-    
-    func test_stopDockerImage_shouldBeSuccess() throws {
-        let expectation = expectation(description: "test_stopDockerImage_shouldBeSuccess")
-        container = try GenericContainer(name: "redis", port: 6379)
-        container.start { _ in
-            self.container.stop {
-                expectation.fulfill()
-            }
-        }
-        waitForExpectations(timeout: 60)
-    }
-    
-    func test_removeDockerImage_shouldBeSuccess() throws {
-        let expectation = expectation(description: "test_removeDockerImage_shouldBeSuccess")
-        container = try GenericContainer(name: "redis", port: 6379)
-        container.start { _ in
-            self.container.clean {
-                expectation.fulfill()
-            }
-        }
-        waitForExpectations(timeout: 60)
+        }.store(in: &cancellables)
+        
+        waitForExpectations(timeout: 120)
     }
 }

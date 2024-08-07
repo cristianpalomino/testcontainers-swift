@@ -7,6 +7,16 @@
 
 import Foundation
 
+extension ContainerConfig {
+    
+    static func build(image name: String, exposed port: Int) -> ContainerConfig {
+        let portBinding = PortBinding(hostPort: "0")
+        let portBindings = ["\(port)/tcp": [portBinding]]
+        let hostConfig = HostConfig(portBindings: portBindings, capAdd: ["NET_ADMIN"])
+        return ContainerConfig(image: name, hostConfig: hostConfig)
+    }
+}
+
 public struct ContainerConfig: Codable {
     public var hostname: String?
     public var domainname: String?
@@ -20,7 +30,7 @@ public struct ContainerConfig: Codable {
     public var env: [String]?
     public var cmd: [String]?
     public var entrypoint: String?
-    public var image: String?
+    public var image: String
     public var labels: [String: String]?
     public var volumes: [String: Volume]?
     public var workingDir: String?
@@ -32,7 +42,7 @@ public struct ContainerConfig: Codable {
     public var hostConfig: HostConfig?
     public var networkingConfig: NetworkingConfig?
     
-    public init(hostname: String? = nil, domainname: String? = nil, user: String? = nil, attachStdin: Bool? = nil, attachStdout: Bool? = nil, attachStderr: Bool? = nil, tty: Bool? = nil, openStdin: Bool? = nil, stdinOnce: Bool? = nil, env: [String]? = nil, cmd: [String]? = nil, entrypoint: String? = nil, image: String? = nil, labels: [String : String]? = nil, volumes: [String : Volume]? = nil, workingDir: String? = nil, networkDisabled: Bool? = nil, macAddress: String? = nil, exposedPorts: [String : ExposedPort]? = nil, stopSignal: String? = nil, stopTimeout: Int? = nil, hostConfig: HostConfig? = nil, networkingConfig: NetworkingConfig? = nil) {
+    public init(hostname: String? = nil, domainname: String? = nil, user: String? = nil, attachStdin: Bool? = nil, attachStdout: Bool? = nil, attachStderr: Bool? = nil, tty: Bool? = nil, openStdin: Bool? = nil, stdinOnce: Bool? = nil, env: [String]? = nil, cmd: [String]? = nil, entrypoint: String? = nil, image: String, labels: [String : String]? = nil, volumes: [String : Volume]? = nil, workingDir: String? = nil, networkDisabled: Bool? = nil, macAddress: String? = nil, exposedPorts: [String : ExposedPort]? = nil, stopSignal: String? = nil, stopTimeout: Int? = nil, hostConfig: HostConfig? = nil, networkingConfig: NetworkingConfig? = nil) {
         self.hostname = hostname
         self.domainname = domainname
         self.user = user
