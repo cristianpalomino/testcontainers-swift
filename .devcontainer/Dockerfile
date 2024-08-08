@@ -66,8 +66,7 @@ RUN set -e; \
     # - Unpack the toolchain, set libs permissions, and clean up.
     && tar -xzf swift.tar.gz --directory / --strip-components=1 \
     && chmod -R o+r /usr/lib/swift \
-    && rm -rf "$GNUPGHOME" swift.tar.gz.sig swift.tar.gz \
-    && apt-get purge --auto-remove -y curl
+    && rm -rf "$GNUPGHOME" swift.tar.gz.sig swift.tar.gz
 
 # Print Installed Swift Version
 RUN swift --version
