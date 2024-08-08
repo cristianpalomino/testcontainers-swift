@@ -3,7 +3,7 @@
     "dockerFile": "Dockerfile",
     "context": "..",
     "appPort": [
-        8080
+        8060
     ],
     "customizations": {
         "vscode": {
