@@ -5,26 +5,35 @@
 //  Created by cristian on 7/08/24.
 //
 
+import Logging
 import Foundation
 import NIOHTTP1
-import NIO
+import NIOCore
 import AsyncHTTPClient
 
 final class HTTPClientResponse: HTTPClientResponseDelegate {
+    
+    private lazy var logger: Logger = {
+        var logger = Logger(label: #file)
+        logger.logLevel = .trace
+        return logger
+    }()
+    
     var response: Data = Data()
     
     func didReceiveHead(task: HTTPClient.Task<Data>, _ head: HTTPResponseHead) -> EventLoopFuture<Void> {
-        print(head.status)
+        logger.info("\(head.status)")
         return task.eventLoop.makeSucceededFuture(())
     }
     
     func didReceiveBodyPart(task: HTTPClient.Task<Data>, _ buffer: ByteBuffer) -> EventLoopFuture<Void> {
+        var mutableBuffer = buffer
         if let chunk = buffer.getString(at: 0, length: buffer.readableBytes),
-           let data = buffer.getData(at: 0, length: buffer.readableBytes) {
-            response.append(data)
-            print("Event: " + chunk)
+           let bytes = mutableBuffer.readBytes(length: buffer.readableBytes) {
+            response.append(Data(bytes))
+            logger.info("Chunk: \(chunk)")
         } else {
-            print("Received chunk of data but could not decode to string.")
+            logger.info("Received chunk of data but could not decode to string.")
         }
         return task.eventLoop.makeSucceededFuture(())
     }
@@ -34,6 +43,6 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
     }
     
     func didReceiveError(task: HTTPClient.Task<Data>, _ error: Error) {
-        print(error)
+        logger.error("Request failed with error: \(error.localizedDescription)")
     }
 }

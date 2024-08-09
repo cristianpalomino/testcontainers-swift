@@ -1,11 +1,9 @@
 import XCTest
-import Combine
 @testable import Testcontainers
 
 final class TestContainersTests: XCTestCase {
     
     var container: GenericContainer!
-    var cancellables = Set<AnyCancellable>()
     
     override class func tearDown() {
         super.tearDown()
@@ -19,18 +17,19 @@ final class TestContainersTests: XCTestCase {
         let expectation = expectation(description: "test_startContainer_shouldBeSuccess")
         var success = false
         
-        container = GenericContainer(name: "redis", port: 6379)
-        container.start().sink { completion in
-            switch completion {
-            case .failure:
-                success = false
-            case .finished:
+        container = GenericContainer(name: "mongo", port: 6379)
+        container.start().whenComplete { result in
+            switch result {
+            case let .success(response):
+                print(response.Name)
+                success = true
                 XCTAssertEqual(success, true)
                 expectation.fulfill()
+            case let .failure(error):
+                success = false
+                XCTAssertEqual(success, true, error.localizedDescription)
             }
-        } receiveValue: { info in
-            success = true
-        }.store(in: &cancellables)
+        }
         
         waitForExpectations(timeout: 120)
     }
@@ -42,18 +41,22 @@ final class TestContainersTests: XCTestCase {
         container = GenericContainer(name: "redis", port: 6379)
         container
             .start()
-            .flatMap { _ in self.container.remove() }
-            .sink { completion in
-                switch completion {
-                case .failure:
-                    success = false
-                case .finished:
+            .map { _ in self.container }
+            .flatMap { container in
+                container.remove()
+            }
+            .whenComplete { result in
+                switch result {
+                case let .success(response):
+                    print(response)
+                    success = true
                     XCTAssertEqual(success, true)
                     expectation.fulfill()
+                case let .failure(error):
+                    success = false
+                    XCTAssertEqual(success, true, error.localizedDescription)
                 }
-            } receiveValue: { info in
-                success = true
-            }.store(in: &cancellables)
+            }
         
         waitForExpectations(timeout: 120)
     }

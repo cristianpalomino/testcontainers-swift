@@ -1,13 +1,13 @@
 //
-//  Container.swift
+//  Docker+Container.swift
 //
 //
 //  Created by cristian on 6/08/24.
 //
 
 import Foundation
-import Combine
 import NIOHTTP1
+import NIOCore
 
 extension Docker {
     
@@ -20,30 +20,33 @@ extension Docker {
             self.id = id
             self.client = client
         }
-        
-        func start() -> AnyPublisher<Void, Error> {
-            let request = Docker.Container.Request.Start(id: id)
-            return client.send(request)
-        }
-        
-        func inspect() -> AnyPublisher<ContainerInspectInfo, Error> {
-            let request = Docker.Container.Request.Get(id: id)
-            return client.send(request)
-        }
-        
-        func stop() -> AnyPublisher<Void, Error> {
-            let request = Docker.Container.Request.Stop(id: id)
-            return client.send(request)
-        }
-        
-        func remove() -> AnyPublisher<Void, Error> {
-            let request = Docker.Container.Request.Remove(id: id)
-            return client.send(request)
-        }
-        
-        func kill() -> AnyPublisher<Void, Error> {
-            let request = Docker.Container.Request.Remove(id: id)
-            return client.send(request)
-        }
+    }
+}
+
+extension Docker.Container {
+    
+    func start() -> EventLoopFuture<Void> {
+        let request = Docker.Container.Request.Start(id: id)
+        return client.send(request)
+    }
+    
+    func inspect() -> EventLoopFuture<ContainerInspectInfo> {
+        let request = Docker.Container.Request.Get(id: id)
+        return client.send(request)
+    }
+    
+    func stop() -> EventLoopFuture<Void> {
+        let request = Docker.Container.Request.Stop(id: id)
+        return client.send(request)
+    }
+    
+    func remove() -> EventLoopFuture<Void> {
+        let request = Docker.Container.Request.Remove(id: id)
+        return client.send(request)
+    }
+    
+    func kill() -> EventLoopFuture<Void> {
+        let request = Docker.Container.Request.Remove(id: id)
+        return client.send(request)
     }
 }

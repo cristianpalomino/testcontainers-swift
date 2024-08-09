@@ -19,7 +19,6 @@ extension Request {
         guard let url = url else {
             fatalError("Unable to create a valid URL.")
         }
-        print(url)
         
         do {
             let request = try HTTPClient.Request(

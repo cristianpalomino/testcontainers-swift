@@ -1,10 +1,10 @@
 import Foundation
 import AsyncHTTPClient
-import Combine
 import Logging
+import NIO
 
 public final class GenericContainer {
-
+    
     let logger = Logger(label: "testcontainers.GenericContainer")
     
     static let uuid = UUID().uuidString
@@ -15,7 +15,6 @@ public final class GenericContainer {
     private var docker: Docker
     private var container: Docker.Container?
     private var image: Docker.Image?
-    private var cancellables = Set<AnyCancellable>()
     
     init(name: String, configuration: ContainerConfig, docker: Docker) {
         self.docker = docker
@@ -29,28 +28,26 @@ public final class GenericContainer {
         self.init(name: name, configuration: configuration, docker: docker)
     }
     
-    public func start() -> AnyPublisher<ContainerInspectInfo, Error> {
-        let pingPublisher = docker.ping()
-            .catch { _ in
+    public func start() -> EventLoopFuture<ContainerInspectInfo> {
+        let pingFuture = docker.ping()
+            .flatMapError { _ in
                 self.docker = Docker(client: DockerHTTPClient(host: Configuration.Testcontainers))
                 return self.docker.ping()
             }
-        let infoPublisher = pingPublisher
+        let infoFuture = pingFuture
             .flatMap { _ in
                 self.docker.info()
             }
-        let versionPublisher = infoPublisher
-            .combineLatest(self.docker.version())
-        let serverInfoPublisher = versionPublisher
-            .handleEvents(receiveOutput: { info, version in
+        let versionFuture = infoFuture.and(docker.version())
+            .map { info, version in
                 let labels = info.Labels
                 var serverInfo = """
-                \nConnected to docker: 
-                  Server Version: \(info.ServerVersion)
-                  API Version: \(version.ApiVersion)
-                  Operating System: \(info.OperatingSystem)
-                  Total Memory: \(info.MemTotal / (1024 * 1024)) MB
-                """
+            \nConnected to docker:
+              Server Version: \(info.ServerVersion)
+              API Version: \(version.ApiVersion)
+              Operating System: \(info.OperatingSystem)
+              Total Memory: \(info.MemTotal / (1024 * 1024)) MB
+            """
                 if !labels.isEmpty {
                     serverInfo.append("\n  Labels:\n")
                     labels.forEach { label in
@@ -58,46 +55,32 @@ public final class GenericContainer {
                     }
                 }
                 self.logger.info(Logger.Message(stringLiteral: serverInfo))
-            })
-        let pullPublisher = serverInfoPublisher
-            .flatMap { _ in
-                self.docker.pull(image: self.name)
             }
-        let imagePublisher = pullPublisher
-            .handleEvents(receiveOutput: { image in
-                self.image = image
-            })
-        let createPublisher = imagePublisher
-            .flatMap { _ in
-                self.docker.create(container: self.configuration)
-            }
-        let containerPublisher = createPublisher
-            .handleEvents(receiveOutput: { container in
-                self.container = container
-            })
-        let startPublisher = containerPublisher
-            .flatMap { container in
-                container.start().map { container }
-            }
-        let inspectPublisher = startPublisher
-            .flatMap { container in
-                container.inspect()
-            }
-        let resultPublisher = inspectPublisher
-            .eraseToAnyPublisher()
         
-        return resultPublisher
+        return versionFuture.flatMap { _ in
+            self.docker.pull(image: self.name).map { image in
+                self.image = image
+                return image
+            }
+        }.flatMap { _ in
+            self.docker.create(container: self.configuration).map { container in
+                self.container = container
+                return container
+            }
+        }.flatMap { container in
+            container.start().map { container }
+        }.flatMap { container in
+            container.inspect()
+        }
     }
     
-    func remove() -> AnyPublisher<Void, Error> {
+    func remove() -> EventLoopFuture<Void> {
         guard let container = container else {
-            return Fail(error: "Container not found").eraseToAnyPublisher()
+            return docker.client.eventLoop.next().makeFailedFuture("Container not found")
         }
         
-        return container.kill()
-            .flatMap { _ in
-                container.remove()
-            }
-            .eraseToAnyPublisher()
+        return container.kill().flatMap { _ in
+            container.remove()
+        }
     }
 }
