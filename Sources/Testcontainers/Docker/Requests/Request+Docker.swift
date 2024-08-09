@@ -18,4 +18,12 @@ extension Docker.Request {
         var path: String = "/_ping"
         var method: HTTPMethod = .GET
     }
+
+    struct GetInfo: Request {
+        typealias Body = EmptyBody
+        typealias Response = Info
+        
+        var path: String = "/info"
+        var method: HTTPMethod = .GET
+    }
 }

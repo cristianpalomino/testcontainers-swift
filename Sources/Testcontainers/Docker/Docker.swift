@@ -83,6 +83,11 @@ final class Docker {
             })
             .eraseToAnyPublisher()
     }
+
+    func info() -> AnyPublisher<Info, Error> {
+        let request = Docker.Request.GetInfo()
+        return client.send(request)
+    }
     
     func pull(image name: String) -> AnyPublisher<Docker.Image, Error> {
         let request = Docker.Image.Request.Create(fromImage: name)

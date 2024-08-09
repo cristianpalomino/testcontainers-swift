@@ -32,7 +32,22 @@ public final class GenericContainer {
                 self.docker = Docker(client: DockerHTTPClient(host: Configuration.Testcotainers))
                 return self.docker.ping()
             }
-            .flatMap {
+            .flatMap { _ in
+                self.docker.info()
+            }
+            .handleEvents(receiveOutput: { info in
+                let serverInfo = """
+                Connected to docker: 
+                  Server Version: \(info.ServerVersion)
+                  API Version:
+                  Operating System: \(info.OperatingSystem)
+                  Total Memory: \(info.MemTotal)
+                  Labels: 
+                    \(info.Labels)
+                """
+                print(serverInfo)
+            })
+            .flatMap { _ in
                 self.docker.pull(image: self.name)
             }
             .handleEvents(receiveOutput: { image in
