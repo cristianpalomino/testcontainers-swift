@@ -1,8 +1,11 @@
 import Foundation
 import AsyncHTTPClient
 import Combine
+import Logging
 
 public final class GenericContainer {
+
+    let logger = Logger(label: "testcontainers.GenericContainer")
     
     static let uuid = UUID().uuidString
     
@@ -28,11 +31,11 @@ public final class GenericContainer {
     
     public func start() -> AnyPublisher<ContainerInspectInfo, Error> {
         let pingPublisher = docker.ping()
-        let infoPublisher = pingPublisher
             .catch { _ in
-                self.docker = Docker(client: DockerHTTPClient(host: Configuration.Testcotainers))
+                self.docker = Docker(client: DockerHTTPClient(host: Configuration.Testcontainers))
                 return self.docker.ping()
             }
+        let infoPublisher = pingPublisher
             .flatMap { _ in
                 self.docker.info()
             }
@@ -42,7 +45,7 @@ public final class GenericContainer {
             .handleEvents(receiveOutput: { info, version in
                 let labels = info.Labels
                 var serverInfo = """
-                Connected to docker: 
+                \nConnected to docker: 
                   Server Version: \(info.ServerVersion)
                   API Version: \(version.ApiVersion)
                   Operating System: \(info.OperatingSystem)
@@ -54,7 +57,7 @@ public final class GenericContainer {
                         serverInfo.append("    \(label)\n")
                     }
                 }
-                print(serverInfo)
+                self.logger.info(Logger.Message(stringLiteral: serverInfo))
             })
         let pullPublisher = serverInfoPublisher
             .flatMap { _ in
