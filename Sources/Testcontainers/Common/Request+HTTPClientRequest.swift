@@ -11,12 +11,15 @@ import NIOHTTP1
 
 extension Request {
     
-    func make() -> HTTPClient.Request {
+    func make(host: String) -> HTTPClient.Request {
         let endpoint = applyQueriesIfAvailable(to: applyParamsIfAvailable())
         
-        guard let url = URL(httpURLWithSocketPath: host, uri: endpoint) else {
+        let url = (host.contains("http")) ? URL(string: "\(host)\(endpoint)") : URL(httpURLWithSocketPath: host, uri: endpoint)
+        
+        guard let url = url else {
             fatalError("Unable to create a valid URL.")
         }
+        print(url)
         
         do {
             let request = try HTTPClient.Request(

@@ -8,5 +8,7 @@
 import Foundation
 
 struct Configuration {
-    static let socketPath: String = "/var/run/docker.sock"
+    
+    static let DockerLocal: String = "/var/run/docker.sock" // Local
+    static let Testcotainers: String = "http://127.0.0.1:53084" // To read from ~/.testcontainers.properties
 }

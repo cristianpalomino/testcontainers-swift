@@ -17,7 +17,6 @@ protocol Request {
     associatedtype Body: Encodable
     associatedtype Response
     
-    var host: String { get }
     var path: String { get }
     var method: HTTPMethod { get }
     var parameters: [String: String]? { get set }
@@ -31,10 +30,6 @@ protocol Request {
 
 extension Request {
     
-    var host: String {
-        return Configuration.socketPath
-    }
-    
     var method: HTTPMethod {
         return .GET
     }
@@ -42,7 +37,7 @@ extension Request {
     var headers: HTTPHeaders {
         return [
             "Content-Type": "application/json",
-            "User-Agent": "tc-swift/1.0.0",
+            "User-Agent": "tc-node/1.0.0",
             "Host": "localhost",
             "x-tc-sid": GenericContainer.uuid
         ]

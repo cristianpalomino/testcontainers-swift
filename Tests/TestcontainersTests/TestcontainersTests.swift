@@ -15,14 +15,45 @@ final class TestContainersTests: XCTestCase {
         try super.tearDownWithError()
     }
     
-    func test_startDockerImage_shouldBeSuccess() throws {
-        let expectation = expectation(description: "test_startDockerImage_shouldBeSuccess")
-        container = GenericContainer(name: "mendhak/http-https-echo", port: 8080)
+    func test_startContainer_shouldBeSuccess() throws {
+        let expectation = expectation(description: "test_startContainer_shouldBeSuccess")
+        var success = false
+        
+        container = GenericContainer(name: "redis", port: 6379)
         container.start().sink { completion in
-            print(completion)
+            switch completion {
+            case .failure:
+                success = false
+            case .finished:
+                XCTAssertEqual(success, true)
+                expectation.fulfill()
+            }
         } receiveValue: { info in
-            expectation.fulfill()
+            success = true
         }.store(in: &cancellables)
+        
+        waitForExpectations(timeout: 120)
+    }
+    
+    func test_startThenRemoveContainer_shouldBeSuccess() throws {
+        let expectation = expectation(description: "test_startThenRemoveContainer_shouldBeSuccess")
+        var success = false
+        
+        container = GenericContainer(name: "redis", port: 6379)
+        container
+            .start()
+            .flatMap { _ in self.container.remove() }
+            .sink { completion in
+                switch completion {
+                case .failure:
+                    success = false
+                case .finished:
+                    XCTAssertEqual(success, true)
+                    expectation.fulfill()
+                }
+            } receiveValue: { info in
+                success = true
+            }.store(in: &cancellables)
         
         waitForExpectations(timeout: 120)
     }

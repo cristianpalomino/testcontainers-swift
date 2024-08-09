@@ -19,12 +19,10 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
     }
     
     func didReceiveBodyPart(task: HTTPClient.Task<Data>, _ buffer: ByteBuffer) -> EventLoopFuture<Void> {
-        if
-            let chunk = buffer.getString(at: 0, length: buffer.readableBytes),
-            let data = buffer.getData(at: 0, length: buffer.readableBytes)
-        {
+        if let chunk = buffer.getString(at: 0, length: buffer.readableBytes),
+           let data = buffer.getData(at: 0, length: buffer.readableBytes) {
             response.append(data)
-            print(chunk)
+            print("Event: " + chunk)
         } else {
             print("Received chunk of data but could not decode to string.")
         }
@@ -33,5 +31,9 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
     
     func didFinishRequest(task: AsyncHTTPClient.HTTPClient.Task<Data>) throws -> Data {
         return response
+    }
+    
+    func didReceiveError(task: HTTPClient.Task<Data>, _ error: Error) {
+        print(error)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  Container.swift
+//  ContainerInspectInfo.swift
 //
 //
 //  Created by cristian on 7/08/24.
@@ -131,7 +131,7 @@ public extension ContainerInspectInfo {
     }
     
     struct GraphDriver: Decodable {
-        public let Data: GraphDriverData
+        public let Data: GraphDriverData?
         public let Name: String
     }
     
@@ -167,7 +167,7 @@ public extension ContainerInspectInfo {
         public let Env: [String]
         public let Cmd: [String]
         public let Image: String
-        public let Volumes: [String: String]?
+//        public let Volumes: [String: String]?
         public let WorkingDir: String
         public let Entrypoint: [String]
         public let OnBuild: [String]?

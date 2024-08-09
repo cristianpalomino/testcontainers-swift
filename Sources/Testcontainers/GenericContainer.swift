@@ -9,7 +9,7 @@ public final class GenericContainer {
     private let name: String
     private let configuration: ContainerConfig
     
-    private let docker: Docker
+    private var docker: Docker
     private var container: Docker.Container?
     private var image: Docker.Image?
     private var cancellables = Set<AnyCancellable>()
@@ -22,12 +22,19 @@ public final class GenericContainer {
     
     convenience init(name: String, port: Int) {
         let configuration: ContainerConfig = .build(image: name, exposed: port)
-        let docker = Docker(client: HTTPClient.shared)
+        let docker = Docker(client: DockerHTTPClient(host: Configuration.DockerLocal))
         self.init(name: name, configuration: configuration, docker: docker)
     }
     
     public func start() -> AnyPublisher<ContainerInspectInfo, Error> {
-        return docker.pull(image: name)
+        return docker.ping()
+            .catch { _ in
+                self.docker = Docker(client: DockerHTTPClient(host: Configuration.Testcotainers))
+                return self.docker.ping()
+            }
+            .flatMap {
+                self.docker.pull(image: self.name)
+            }
             .handleEvents(receiveOutput: { image in
                 self.image = image
             })
@@ -46,7 +53,7 @@ public final class GenericContainer {
             .eraseToAnyPublisher()
     }
     
-    func stop() -> AnyPublisher<Void, Error> {
+    func remove() -> AnyPublisher<Void, Error> {
         guard let container = container else {
             return Fail(error: "Container not found").eraseToAnyPublisher()
         }
