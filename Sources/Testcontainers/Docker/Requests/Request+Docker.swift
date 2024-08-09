@@ -26,4 +26,12 @@ extension Docker.Request {
         var path: String = "/info"
         var method: HTTPMethod = .GET
     }
+
+    struct GetVersion: Request {
+        typealias Body = EmptyBody
+        typealias Response = Version
+        
+        var path: String = "/version"
+        var method: HTTPMethod = .GET
+    }
 }
