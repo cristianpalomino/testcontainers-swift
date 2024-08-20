@@ -1,4 +1,4 @@
-name: Swift
+name: CI-Docker-Rootless
 
 on:
   push:
@@ -16,6 +16,10 @@ jobs:
     permissions:
       checks: write
     steps:
+      - name: Setup rootless Docker
+        uses: ScribeMD/rootless-docker@0.2.2
+      - name: Remove Docket root socket
+        run: sudo rm -rf /var/run/docker.sock
       - uses: swift-actions/setup-swift@v2
         with:
           swift-version: ${{ matrix.swift }}

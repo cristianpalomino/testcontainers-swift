@@ -24,11 +24,11 @@ final class TestContainersTests: XCTestCase {
                 print(response.Name)
                 success = true
                 XCTAssertEqual(success, true)
-                expectation.fulfill()
             case let .failure(error):
                 success = false
                 XCTAssertEqual(success, true, error.localizedDescription)
             }
+            expectation.fulfill()
         }
         
         waitForExpectations(timeout: 120)
@@ -51,11 +51,11 @@ final class TestContainersTests: XCTestCase {
                     print(response)
                     success = true
                     XCTAssertEqual(success, true)
-                    expectation.fulfill()
                 case let .failure(error):
                     success = false
                     XCTAssertEqual(success, true, error.localizedDescription)
                 }
+                expectation.fulfill()
             }
         
         waitForExpectations(timeout: 120)
