@@ -5,39 +5,41 @@ import NIO
 
 public final class GenericContainer {
     
-    let logger = Logger(label: "testcontainers.GenericContainer")
+    let logger = Logger(label: "GenericContainer")
     
     static let uuid = UUID().uuidString
     
     private let name: String
     private let configuration: ContainerConfig
     
-    private var docker: Docker
+    private var docker: Docker?
     private var container: Docker.Container?
     private var image: Docker.Image?
     
-    init(name: String, configuration: ContainerConfig, docker: Docker) {
-        self.docker = docker
+    init(name: String, configuration: ContainerConfig) {
         self.name = name
         self.configuration = configuration
+        
+        guard let client = DockerClientStrategy().resolve() else {
+            self.docker = nil
+            logger.error("Unable to resolve a Docker client")
+            return
+        }
+        self.docker = Docker(client: client)
     }
     
     convenience init(name: String, port: Int) {
         let configuration: ContainerConfig = .build(image: name, exposed: port)
-        let docker = Docker(client: DockerHTTPClient(host: Configuration.DockerLocal))
-        self.init(name: name, configuration: configuration, docker: docker)
+        self.init(name: name, configuration: configuration)
     }
     
     public func start() -> EventLoopFuture<ContainerInspectInfo> {
-        let pingFuture = docker.ping()
-            .flatMapError { _ in
-                self.docker = Docker(client: DockerHTTPClient(host: Configuration.Testcontainers))
-                return self.docker.ping()
-            }
-        let infoFuture = pingFuture
-            .flatMap { _ in
-                self.docker.info()
-            }
+        guard let docker else {
+            return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
+                .makeFailedFuture("Unable to resolve a Docker client")
+        }
+        
+        let infoFuture = docker.info()
         let versionFuture = infoFuture.and(docker.version())
             .map { info, version in
                 let labels = info.Labels
@@ -58,12 +60,12 @@ public final class GenericContainer {
             }
         
         return versionFuture.flatMap { _ in
-            self.docker.pull(image: self.name).map { image in
+            docker.pull(image: self.name).map { image in
                 self.image = image
                 return image
             }
         }.flatMap { _ in
-            self.docker.create(container: self.configuration).map { container in
+            docker.create(container: self.configuration).map { container in
                 self.container = container
                 return container
             }
@@ -75,12 +77,15 @@ public final class GenericContainer {
     }
     
     func remove() -> EventLoopFuture<Void> {
+        guard let docker else {
+            return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
+                .makeFailedFuture("Unable to resolve a Docker client")
+        }
+        
         guard let container = container else {
             return docker.client.eventLoop.next().makeFailedFuture("Container not found")
         }
         
-        return container.kill().flatMap { _ in
-            container.remove()
-        }
+        return container.kill()
     }
 }

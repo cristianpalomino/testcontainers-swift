@@ -1,4 +1,4 @@
-name: Swift
+name: CI-Testcontainers-Cloud
 
 on:
   push:
@@ -16,6 +16,10 @@ jobs:
     permissions:
       checks: write
     steps:
+      - name: Setup Testcontainers Cloud Client
+        uses: atomicjar/testcontainers-cloud-setup-action@main
+        with:
+          token: ${{ secrets.TC_CLOUD_TOKEN }}
       - uses: swift-actions/setup-swift@v2
         with:
           swift-version: ${{ matrix.swift }}
