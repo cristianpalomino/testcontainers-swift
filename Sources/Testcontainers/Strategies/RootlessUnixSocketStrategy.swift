@@ -19,7 +19,6 @@ final class RootlessUnixSocketStrategy: DockerClientStrategyProtocol {
     var paths: [String] {
         if let dockerHost = ProcessInfo.processInfo.environment["DOCKER_HOST"],
         dockerHost.hasPrefix("unix://") {
-            print(dockerHost)
             return [dockerHost.replacingOccurrences(of: "unix://", with: "")]
         }
 
@@ -33,7 +32,6 @@ final class RootlessUnixSocketStrategy: DockerClientStrategyProtocol {
     func getHosts() -> [String] {
         var hosts: [String] = []
         for path in paths {
-            print(path)
             guard let host = path.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
                 continue
             }

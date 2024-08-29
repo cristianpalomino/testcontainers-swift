@@ -13,11 +13,40 @@ final class TestContainersTests: XCTestCase {
         try super.tearDownWithError()
     }
     
+    func test_startContainer_shouldBeSuccess_async_await() async throws {
+        var success = false
+        do {
+            container = GenericContainer(name: "redis", port: 6379)
+            let response = try await container.start().get()
+            print(response.Name)
+            success = true
+            XCTAssertEqual(success, true)
+        } catch {
+            success = false
+            XCTAssertEqual(success, true, error.localizedDescription)
+        }
+    }
+    
+    func test_startThenRemoveContainer_shouldBeSuccess_async_await() async throws {
+        var success = false
+        do {
+            container = GenericContainer(name: "redis", port: 6379)
+            let response = try await container.start().get()
+            print(response.Name)
+            try await container.remove().get()
+            success = true
+            XCTAssertEqual(success, true)
+        } catch {
+            success = false
+            XCTAssertEqual(success, true, error.localizedDescription)
+        }
+    }
+
     func test_startContainer_shouldBeSuccess() throws {
         let expectation = expectation(description: "test_startContainer_shouldBeSuccess")
         var success = false
         
-        container = GenericContainer(name: "mongo", port: 6379)
+        container = GenericContainer(name: "redis", port: 6379)
         container.start().whenComplete { result in
             switch result {
             case let .success(response):

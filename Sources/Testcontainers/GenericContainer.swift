@@ -32,7 +32,7 @@ public final class GenericContainer {
         let configuration: ContainerConfig = .build(image: name, exposed: port)
         self.init(name: name, configuration: configuration)
     }
-    
+
     public func start() -> EventLoopFuture<ContainerInspectInfo> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
@@ -75,8 +75,8 @@ public final class GenericContainer {
             container.inspect()
         }
     }
-    
-    func remove() -> EventLoopFuture<Void> {
+
+    public func remove() -> EventLoopFuture<Void> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
                 .makeFailedFuture("Unable to resolve a Docker client")
