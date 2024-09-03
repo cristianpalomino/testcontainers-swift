@@ -5,34 +5,35 @@ import NIO
 
 public final class GenericContainer {
     
-    let logger = Logger(label: "GenericContainer")
-    
     static let uuid = UUID().uuidString
     
-    private let name: String
+    private let logger: Logger
+    private let imageParams: ImageParams
     private let configuration: ContainerConfig
     
     private var docker: Docker?
     private var container: Docker.Container?
     private var image: Docker.Image?
     
-    public init(name: String, configuration: ContainerConfig) {
-        self.name = name
+    public init(image: ImageParams, configuration: ContainerConfig, logger: Logger? = nil) {
+        self.imageParams = image
         self.configuration = configuration
+        self.logger = logger ?? Logger(label: "GenericContainer")
         
         guard let client = DockerClientStrategy().resolve() else {
             self.docker = nil
-            logger.error("Unable to resolve a Docker client")
+            self.logger.error("Unable to resolve a Docker client")
             return
         }
         self.docker = Docker(client: client)
     }
     
-    public convenience init(name: String, port: Int) {
+    public convenience init(name: String, tag: String = "latest", port: Int) {
         let configuration: ContainerConfig = .build(image: name, exposed: port)
-        self.init(name: name, configuration: configuration)
+        let image = ImageParams(name: name, tag: tag, src: nil, repo: nil)
+        self.init(image: image, configuration: configuration)
     }
-
+    
     public func start() -> EventLoopFuture<ContainerInspectInfo> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
@@ -60,7 +61,7 @@ public final class GenericContainer {
             }
         
         return versionFuture.flatMap { _ in
-            docker.pull(image: self.name).map { image in
+            docker.pull(params: self.imageParams).map { image in
                 self.image = image
                 return image
             }
@@ -75,7 +76,7 @@ public final class GenericContainer {
             container.inspect()
         }
     }
-
+    
     public func remove() -> EventLoopFuture<Void> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
