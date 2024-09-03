@@ -15,10 +15,10 @@ public final class GenericContainer {
     private var container: Docker.Container?
     private var image: Docker.Image?
     
-    public init(image: ImageParams, configuration: ContainerConfig, logger: Logger? = nil) {
+    public init(image: ImageParams, configuration: ContainerConfig, logger: Logger) {
         self.imageParams = image
         self.configuration = configuration
-        self.logger = logger ?? Logger(label: "GenericContainer")
+        self.logger = logger
         
         guard let client = DockerClientStrategy().resolve() else {
             self.docker = nil
@@ -28,15 +28,24 @@ public final class GenericContainer {
         self.docker = Docker(client: client)
     }
     
-    public convenience init(image: ImageParams, port: Int) {
+    public convenience init(
+        image: ImageParams, 
+        port: Int, 
+        logger: Logger = Logger(label: String(describing: GenericContainer.self))
+    ) {
         let configuration: ContainerConfig = .build(image: image.name, exposed: port)
-        self.init(image: image, configuration: configuration)
+        self.init(image: image, configuration: configuration, logger: logger)
     }
     
-    public convenience init(name: String, tag: String = "latest", port: Int) {
+    public convenience init(
+        name: String, 
+        tag: String = "latest", 
+        port: Int, 
+        logger: Logger = Logger(label: String(describing: GenericContainer.self))
+    ) {
         let configuration: ContainerConfig = .build(image: name, exposed: port)
         let image = ImageParams(name: name, tag: tag, src: nil, repo: nil)
-        self.init(image: image, configuration: configuration)
+        self.init(image: image, configuration: configuration, logger: logger)
     }
     
     public func start() -> EventLoopFuture<ContainerInspectInfo> {
