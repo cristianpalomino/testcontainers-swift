@@ -29,7 +29,7 @@ extension Request {
             )
             return request
         } catch {
-            fatalError(error.localizedDescription)
+            fatalError(String(describing: error))
         }
     }
 }

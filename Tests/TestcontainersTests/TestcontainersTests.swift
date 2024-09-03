@@ -24,7 +24,7 @@ final class TestContainersTests: XCTestCase {
             XCTAssertEqual(success, true)
         } catch {
             success = false
-            XCTAssertEqual(success, true, error.localizedDescription)
+            XCTAssertEqual(success, true, String(describing: error))
         }
     }
     
@@ -47,7 +47,7 @@ final class TestContainersTests: XCTestCase {
                     XCTAssertEqual(success, true)
                 case let .failure(error):
                     success = false
-                    XCTAssertEqual(success, true, error.localizedDescription)
+                    XCTAssertEqual(success, true, String(describing: error))
                 }
                 expectation.fulfill()
             }
@@ -76,7 +76,7 @@ final class TestContainersTests: XCTestCase {
                     XCTAssertEqual(success, true)
                 case let .failure(error):
                     success = false
-                    XCTAssertEqual(success, true, error.localizedDescription)
+                    XCTAssertEqual(success, true, String(describing: error))
                 }
                 expectation.fulfill()
             }

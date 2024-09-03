@@ -10,7 +10,7 @@ import Logging
 
 final class RootlessUnixSocketStrategy: DockerClientStrategyProtocol {
     
-    var logger = Logger(label: "RootlessUnixSocketStrategy")
+    let logger: Logger = Logger(label: String(describing: RootlessUnixSocketStrategy.self))
     
     var home: URL {
         return FileManager.default.homeDirectoryForCurrentUser

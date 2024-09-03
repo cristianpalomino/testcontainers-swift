@@ -14,7 +14,7 @@ extension Request where Body: Encodable {
             do {
                 return try JSONEncoder().encode(body)
             } catch {
-                fatalError(error.localizedDescription)
+                fatalError(String(describing: error))
             }
         }
     }
