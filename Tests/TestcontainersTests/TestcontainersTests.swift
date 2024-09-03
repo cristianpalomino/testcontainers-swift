@@ -56,12 +56,12 @@ final class TestContainersTests: XCTestCase {
     }
     
     func test_startUsingTag_ThenRemoveContainer_shouldBeSuccess() throws {
-        let expectation = expectation(description: "test_startThenRemoveContainer_shouldBeSuccess")
+        let expectation = expectation(description: "test_startUsingTag_ThenRemoveContainer_shouldBeSuccess")
         var success = false
         
-        // container = GenericContainer(name: "redis", tag: "bookworm", port: 6379)
-        let params = ImageParams(name: "redis", tag: "7.2.5", src: nil, repo: nil)
-        container = GenericContainer(image: params, port: 6379)
+        container = GenericContainer(name: "redis", tag: "bookworm", port: 6379)
+        // let params = ImageParams(name: "redis", tag: "7.2.5", src: nil, repo: nil)
+        // container = GenericContainer(image: params, port: 6379)
         container
             .start()
             .map { _ in self.container }
