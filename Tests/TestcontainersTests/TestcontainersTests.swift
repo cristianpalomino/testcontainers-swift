@@ -59,9 +59,10 @@ final class TestContainersTests: XCTestCase {
         let expectation = expectation(description: "test_startUsingTag_ThenRemoveContainer_shouldBeSuccess")
         var success = false
         
-        container = GenericContainer(name: "redis", tag: "bookworm", port: 6379)
+        // container = GenericContainer(name: "rabbitmq", tag: "3-alpine", port: 6379)
         // let params = ImageParams(name: "redis", tag: "7.2.5", src: nil, repo: nil)
         // container = GenericContainer(image: params, port: 6379)
+        container = try GenericContainer(image: "redis:7.2.5", port: 6379)
         container
             .start()
             .map { _ in self.container }

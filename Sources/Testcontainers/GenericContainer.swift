@@ -48,6 +48,16 @@ public final class GenericContainer {
         self.init(image: image, configuration: configuration, logger: logger)
     }
     
+    public convenience init(
+        image: String,
+        port: Int,
+        logger: Logger = Logger(label: String(describing: GenericContainer.self))
+    ) throws {
+        let image = try ImageParams(image: image, src: nil, repo: nil)
+        let configuration: ContainerConfig = .build(image: image.name, tag: image.tag, exposed: port)
+        self.init(image: image, configuration: configuration, logger: logger)
+    }
+    
     public func start() -> EventLoopFuture<ContainerInspectInfo> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
