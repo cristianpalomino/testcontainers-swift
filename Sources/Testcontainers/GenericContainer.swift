@@ -16,7 +16,7 @@ public final class GenericContainer {
     private var container: Docker.Container?
     private var image: Docker.Image?
     
-    init(name: String, configuration: ContainerConfig) {
+    public init(name: String, configuration: ContainerConfig) {
         self.name = name
         self.configuration = configuration
         
@@ -28,7 +28,7 @@ public final class GenericContainer {
         self.docker = Docker(client: client)
     }
     
-    convenience init(name: String, port: Int) {
+    public convenience init(name: String, port: Int) {
         let configuration: ContainerConfig = .build(image: name, exposed: port)
         self.init(name: name, configuration: configuration)
     }
