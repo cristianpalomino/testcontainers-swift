@@ -28,6 +28,11 @@ public final class GenericContainer {
         self.docker = Docker(client: client)
     }
     
+    public convenience init(image: ImageParams, port: Int) {
+        let configuration: ContainerConfig = .build(image: image.name, exposed: port)
+        self.init(image: image, configuration: configuration)
+    }
+    
     public convenience init(name: String, tag: String = "latest", port: Int) {
         let configuration: ContainerConfig = .build(image: name, exposed: port)
         let image = ImageParams(name: name, tag: tag, src: nil, repo: nil)

@@ -1,5 +1,5 @@
 //
-//  DockerImageParams.swift
+//  ImageParams.swift
 //
 //
 //  Created by cristian on 3/09/24.
