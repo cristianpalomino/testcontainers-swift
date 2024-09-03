@@ -37,11 +37,7 @@ final class DockerHTTPClient: DockerClientProtocol {
     
     func send<T>(_ request: T) -> NIOCore.EventLoopFuture<T.Response> where T : Request {
         let promise = eventLoop.makePromise(of: T.Response.self)
-        
-        let httpClienRequest = request.make(host: host)
-        logger.info("Executing HTTP request to URL: \(httpClienRequest.url)")
-        
-        client.execute(request: httpClienRequest, delegate: HTTPClientResponse())
+        client.execute(request: request.make(host: host, logger: logger), delegate: HTTPClientResponse())
             .futureResult
             .whenComplete { result in
                 switch result {

@@ -29,21 +29,21 @@ public final class GenericContainer {
     }
     
     public convenience init(
-        image: ImageParams, 
-        port: Int, 
+        image: ImageParams,
+        port: Int,
         logger: Logger = Logger(label: String(describing: GenericContainer.self))
     ) {
-        let configuration: ContainerConfig = .build(image: image.name, exposed: port)
+        let configuration: ContainerConfig = .build(image: image.name, tag: image.tag, exposed: port)
         self.init(image: image, configuration: configuration, logger: logger)
     }
     
     public convenience init(
-        name: String, 
-        tag: String = "latest", 
-        port: Int, 
+        name: String,
+        tag: String = "latest",
+        port: Int,
         logger: Logger = Logger(label: String(describing: GenericContainer.self))
     ) {
-        let configuration: ContainerConfig = .build(image: name, exposed: port)
+        let configuration: ContainerConfig = .build(image: name, tag: tag, exposed: port)
         let image = ImageParams(name: name, tag: tag, src: nil, repo: nil)
         self.init(image: image, configuration: configuration, logger: logger)
     }
