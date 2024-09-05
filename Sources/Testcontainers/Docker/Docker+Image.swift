@@ -12,10 +12,10 @@ extension Docker {
     
     final class Image {
         
-        let params: ImageParams
+        let params: DockerImageName
         let client: DockerClientProtocol
         
-        init(params: ImageParams, client: DockerClientProtocol) {
+        init(params: DockerImageName, client: DockerClientProtocol) {
             self.params = params
             self.client = client
         }

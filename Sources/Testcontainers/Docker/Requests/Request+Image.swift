@@ -18,15 +18,9 @@ extension Docker.Image.Request {
         var method: HTTPMethod = .POST
         var query: [String: String]? = [:]
         
-        public init(params: ImageParams) {
+        public init(params: DockerImageName) {
             self.query?["fromImage"] = params.name
             self.query?["tag"] = params.tag
-            if let fromSrc = params.src {
-                self.query?["fromSrc"] = fromSrc
-            }
-            if let repo = params.repo {
-                self.query?["repo"] = repo
-            }
         }
     }
 }

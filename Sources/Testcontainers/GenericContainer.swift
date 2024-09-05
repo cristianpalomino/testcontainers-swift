@@ -8,14 +8,14 @@ public final class GenericContainer {
     static let uuid = UUID().uuidString
     
     private let logger: Logger
-    private let imageParams: ImageParams
+    private let imageParams: DockerImageName
     private let configuration: ContainerConfig
     
     private var docker: Docker?
     private var container: Docker.Container?
     private var image: Docker.Image?
     
-    public init(image: ImageParams, configuration: ContainerConfig, logger: Logger) {
+    public init(image: DockerImageName, configuration: ContainerConfig, logger: Logger) {
         self.imageParams = image
         self.configuration = configuration
         self.logger = logger
@@ -29,7 +29,7 @@ public final class GenericContainer {
     }
     
     public convenience init(
-        image: ImageParams,
+        image: DockerImageName,
         port: Int,
         logger: Logger = Logger(label: String(describing: GenericContainer.self))
     ) {
@@ -44,7 +44,7 @@ public final class GenericContainer {
         logger: Logger = Logger(label: String(describing: GenericContainer.self))
     ) {
         let configuration: ContainerConfig = .build(image: name, tag: tag, exposed: port)
-        let image = ImageParams(name: name, tag: tag, src: nil, repo: nil)
+        let image = DockerImageName(name: name, tag: tag)
         self.init(image: image, configuration: configuration, logger: logger)
     }
     
@@ -53,7 +53,7 @@ public final class GenericContainer {
         port: Int,
         logger: Logger = Logger(label: String(describing: GenericContainer.self))
     ) throws {
-        let image = try ImageParams(image: image, src: nil, repo: nil)
+        let image = try DockerImageName(image: image)
         let configuration: ContainerConfig = .build(image: image.name, tag: image.tag, exposed: port)
         self.init(image: image, configuration: configuration, logger: logger)
     }
