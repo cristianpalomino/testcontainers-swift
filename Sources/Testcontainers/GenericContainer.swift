@@ -5,34 +5,59 @@ import NIO
 
 public final class GenericContainer {
     
-    let logger = Logger(label: "GenericContainer")
-    
     static let uuid = UUID().uuidString
     
-    private let name: String
+    private let logger: Logger
+    private let imageParams: DockerImageName
     private let configuration: ContainerConfig
     
     private var docker: Docker?
     private var container: Docker.Container?
     private var image: Docker.Image?
     
-    public init(name: String, configuration: ContainerConfig) {
-        self.name = name
+    public init(image: DockerImageName, configuration: ContainerConfig, logger: Logger) {
+        self.imageParams = image
         self.configuration = configuration
+        self.logger = logger
         
         guard let client = DockerClientStrategy().resolve() else {
             self.docker = nil
-            logger.error("Unable to resolve a Docker client")
+            self.logger.error("Unable to resolve a Docker client")
             return
         }
         self.docker = Docker(client: client)
     }
     
-    public convenience init(name: String, port: Int) {
-        let configuration: ContainerConfig = .build(image: name, exposed: port)
-        self.init(name: name, configuration: configuration)
+    public convenience init(
+        image: DockerImageName,
+        port: Int,
+        logger: Logger = Logger(label: String(describing: GenericContainer.self))
+    ) {
+        let configuration: ContainerConfig = .build(image: image.name, tag: image.tag, exposed: port)
+        self.init(image: image, configuration: configuration, logger: logger)
     }
-
+    
+    public convenience init(
+        name: String,
+        tag: String = "latest",
+        port: Int,
+        logger: Logger = Logger(label: String(describing: GenericContainer.self))
+    ) {
+        let configuration: ContainerConfig = .build(image: name, tag: tag, exposed: port)
+        let image = DockerImageName(name: name, tag: tag)
+        self.init(image: image, configuration: configuration, logger: logger)
+    }
+    
+    public convenience init(
+        image: String,
+        port: Int,
+        logger: Logger = Logger(label: String(describing: GenericContainer.self))
+    ) throws {
+        let image = try DockerImageName(image: image)
+        let configuration: ContainerConfig = .build(image: image.name, tag: image.tag, exposed: port)
+        self.init(image: image, configuration: configuration, logger: logger)
+    }
+    
     public func start() -> EventLoopFuture<ContainerInspectInfo> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
@@ -60,7 +85,7 @@ public final class GenericContainer {
             }
         
         return versionFuture.flatMap { _ in
-            docker.pull(image: self.name).map { image in
+            docker.pull(params: self.imageParams).map { image in
                 self.image = image
                 return image
             }
@@ -75,7 +100,7 @@ public final class GenericContainer {
             container.inspect()
         }
     }
-
+    
     public func remove() -> EventLoopFuture<Void> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()

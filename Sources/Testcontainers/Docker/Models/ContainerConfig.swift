@@ -9,11 +9,12 @@ import Foundation
 
 extension ContainerConfig {
     
-    static func build(image name: String, exposed port: Int) -> ContainerConfig {
+    // TODO: To improve...
+    static func build(image name: String, tag: String, exposed port: Int) -> ContainerConfig {
         let portBinding = PortBinding(hostPort: "0")
         let portBindings = ["\(port)/tcp": [portBinding]]
         return ContainerConfig(
-            image: name,
+            image: "\(name):\(tag)",
             labels: ["org.testcontainers.lang": "swift",
                      "org.testcontainers": "true",
                      "org.testcontainers.version": "0.0.1"],

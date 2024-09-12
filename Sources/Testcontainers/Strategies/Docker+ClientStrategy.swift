@@ -53,16 +53,13 @@ extension DockerClientStrategyProtocol {
                     if client == nil {
                         switch result {
                         case .success:
-                            self.logger.info("Successful ping to host: \(host)")
+                            self.logger.info("Successfull ping to host: \(host)")
                             client = hostClient
-                            dispatchGroup.leave()
                         case .failure(let error):
                             self.logger.warning("Failed ping to host: \(host), error: \(error)")
-                            dispatchGroup.leave()
                         }
-                    } else {
-                        dispatchGroup.leave()
                     }
+                    dispatchGroup.leave()
                 }
             }
         }

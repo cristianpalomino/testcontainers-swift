@@ -1,6 +1,6 @@
 //
 //  Request+Image.swift
-//  
+//
 //
 //  Created by cristian on 7/08/24.
 //
@@ -18,20 +18,9 @@ extension Docker.Image.Request {
         var method: HTTPMethod = .POST
         var query: [String: String]? = [:]
         
-        public init(
-            fromImage: String,
-            fromSrc: String? = nil,
-            repo: String? = nil,
-            tag: String = "latest"
-        ) {
-            self.query?["fromImage"] = fromImage
-            self.query?["tag"] = tag
-            if let fromSrc = fromSrc {
-                self.query?["fromSrc"] = fromSrc
-            }
-            if let repo = repo {
-                self.query?["repo"] = repo
-            }
+        public init(params: DockerImageName) {
+            self.query?["fromImage"] = params.name
+            self.query?["tag"] = params.tag
         }
     }
 }

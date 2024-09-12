@@ -34,10 +34,10 @@ extension Docker {
         return client.send(request)
     }
     
-    func pull(image name: String) -> EventLoopFuture<Docker.Image> {
-        let request = Docker.Image.Request.Create(fromImage: name)
+    func pull(params: DockerImageName) -> EventLoopFuture<Docker.Image> {
+        let request = Docker.Image.Request.Create(params: params)
         return client.send(request)
-            .map { Docker.Image(name: name, client: self.client) }
+            .map { Docker.Image(params: params, client: self.client) }
     }
     
     func create(container configuration: ContainerConfig) -> EventLoopFuture<Docker.Container> {
