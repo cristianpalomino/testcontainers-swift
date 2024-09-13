@@ -10,7 +10,7 @@ import Logging
 
 final class UnixSocketStrategy: DockerClientStrategyProtocol {
     
-    var logger = Logger(label: "UnixSocketStrategy")
+    let logger: Logger = Logger(label: String(describing: UnixSocketStrategy.self))
     
     var home: URL {
         return FileManager.default.homeDirectoryForCurrentUser

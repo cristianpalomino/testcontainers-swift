@@ -8,10 +8,11 @@
 import Foundation
 import AsyncHTTPClient
 import NIOHTTP1
+import Logging
 
 extension Request {
     
-    func make(host: String) -> HTTPClient.Request {
+    func make(host: String, logger: Logger) -> HTTPClient.Request {
         let endpoint = applyQueriesIfAvailable(to: applyParamsIfAvailable())
         
         let url = (host.contains("http")) ? URL(string: "\(host)\(endpoint)") : URL(httpURLWithSocketPath: host, uri: endpoint)
@@ -21,15 +22,24 @@ extension Request {
         }
         
         do {
+            let body = try encode(body)
             let request = try HTTPClient.Request(
                 url: url,
                 method: method,
                 headers: headers,
-                body: .data(try encode(body))
+                body: .data(body)
             )
+            
+            let log = """
+            \nSending
+            URL: \(request.url)|\(request.method)
+            Body: \(String(data: body, encoding: .utf8) ?? "-")
+            """
+            logger.info(Logger.Message(stringLiteral: log))
+            
             return request
         } catch {
-            fatalError(error.localizedDescription)
+            fatalError(String(describing: error))
         }
     }
 }

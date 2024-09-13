@@ -10,7 +10,7 @@ import Logging
 
 struct TestcontainersStrategy: DockerClientStrategyProtocol {
     
-    var logger = Logger(label: "TestcontainersStrategy")
+    let logger: Logger = Logger(label: String(describing: TestcontainersStrategy.self))
     var paths: [String]
     
     init(paths: [String] = []) {
@@ -61,7 +61,7 @@ struct TestcontainersStrategy: DockerClientStrategyProtocol {
                 }
             }
         } catch {
-            logger.info("Error reading the file: \(error.localizedDescription)")
+            logger.info("Error reading the file: \(String(describing: error))")
         }
         
         return properties
