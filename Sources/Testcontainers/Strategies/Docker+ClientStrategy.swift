@@ -13,7 +13,6 @@ final class DockerClientStrategy {
     
     var strategies: [DockerClientStrategyProtocol] = [
         TestcontainersStrategy(),
-        RootlessUnixSocketStrategy(),
         UnixSocketStrategy()
     ]
     
