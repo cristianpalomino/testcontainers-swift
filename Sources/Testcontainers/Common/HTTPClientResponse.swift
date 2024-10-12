@@ -19,7 +19,7 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
     func didReceiveHead(task: HTTPClient.Task<Data>, _ head: HTTPResponseHead) -> EventLoopFuture<Void> {
         switch head.status.code {
         case 200..<300:
-            logger.info("Request succeeded with status: \(head.status)")
+            logger.debug("Request succeeded with status: \(head.status)")
             return task.eventLoop.makeSucceededFuture(())
         case 300..<400:
             logger.warning("Request resulted in a redirection with status: \(head.status)")
@@ -42,9 +42,9 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
         if let chunk = buffer.getString(at: 0, length: buffer.readableBytes),
            let bytes = mutableBuffer.readBytes(length: buffer.readableBytes) {
             response.append(Data(bytes))
-            logger.info("Chunk: \(chunk)")
+            logger.debug("Chunk: \(chunk)")
         } else {
-            logger.info("Received chunk of data but could not decode to string.")
+            logger.debug("Received chunk of data but could not decode to string.")
         }
         return task.eventLoop.makeSucceededFuture(())
     }
@@ -54,6 +54,6 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
     }
     
     func didReceiveError(task: HTTPClient.Task<Data>, _ error: Error) {
-        logger.error("Request failed with error: \(String(describing: error))")
+        logger.debug("Request failed with error: \(String(describing: error))")
     }
 }

@@ -39,11 +39,12 @@ extension DockerClientStrategyProtocol {
         let dispatchGroup = DispatchGroup()
         var client: DockerHTTPClient?
         let queue = DispatchQueue(label: "testcontainers.client.strategy")
-        
+
         for host in getHosts() {
             dispatchGroup.enter()
-            logger.info("Resolving host: \(host)")
-            
+            let hostName = URL(string: host)?.host(percentEncoded: false) ?? host
+            logger.info("🔍 Resolving Docker host at: \(hostName)")
+
             let hostClient = DockerHTTPClient(host: host)
             let docker = Docker(client: hostClient)
             
@@ -52,10 +53,10 @@ extension DockerClientStrategyProtocol {
                     if client == nil {
                         switch result {
                         case .success:
-                            self.logger.info("Successfull ping to host: \(host)")
+                            self.logger.debug("Successfull ping to host: \(host)")
                             client = hostClient
                         case .failure(let error):
-                            self.logger.warning("Failed ping to host: \(host), error: \(error)")
+                            self.logger.debug("Failed ping to host: \(host), error: \(error)")
                         }
                     }
                     dispatchGroup.leave()

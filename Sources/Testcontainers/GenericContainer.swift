@@ -22,7 +22,7 @@ public final class GenericContainer {
         
         guard let client = DockerClientStrategy().resolve() else {
             self.docker = nil
-            self.logger.error("Unable to resolve a Docker client")
+            self.logger.error("❌ Unable to resolve a Docker client")
             return
         }
         self.docker = Docker(client: client)
@@ -67,21 +67,12 @@ public final class GenericContainer {
         let infoFuture = docker.info()
         let versionFuture = infoFuture.and(docker.version())
             .map { info, version in
-                let labels = info.Labels
-                var serverInfo = """
-            \nConnected to docker:
-              Server Version: \(info.ServerVersion)
-              API Version: \(version.ApiVersion)
-              Operating System: \(info.OperatingSystem)
-              Total Memory: \(info.MemTotal / (1024 * 1024)) MB
-            """
-                if !labels.isEmpty {
-                    serverInfo.append("\n  Labels:\n")
-                    labels.forEach { label in
-                        serverInfo.append("    \(label)\n")
-                    }
-                }
-                self.logger.info(Logger.Message(stringLiteral: serverInfo))
+                self.logger.info("🐳 Connected to Docker:")
+                self.logger.info("→ Server Version: \(info.ServerVersion)")
+                self.logger.info("→ API Version: \(version.ApiVersion)")
+                self.logger.info("→ Operating System: \(info.OperatingSystem)")
+                self.logger.info("→ Total Memory: \(info.MemTotal / (1024 * 1024)) MB")
+                self.logger.info("→ Labels: \(info.Labels)")
             }
         
         return versionFuture.flatMap { _ in

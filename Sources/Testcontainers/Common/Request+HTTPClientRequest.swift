@@ -30,12 +30,8 @@ extension Request {
                 body: .data(body)
             )
             
-            let log = """
-            \nSending
-            URL: \(request.url)|\(request.method)
-            Body: \(String(data: body, encoding: .utf8) ?? "-")
-            """
-            logger.info(Logger.Message(stringLiteral: log))
+            let encodedBody = String(data: body, encoding: .utf8) ?? "-"
+            logger.debug("Sending URL: \(request.url)|\(request.method), Body: \(encodedBody)")
             
             return request
         } catch {
