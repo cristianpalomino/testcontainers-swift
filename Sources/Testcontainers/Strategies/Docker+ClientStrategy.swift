@@ -62,6 +62,7 @@ extension DockerClientStrategyProtocol {
                     if client == nil {
                         switch result {
                         case .success:
+                            // Remove percent encoding for pretty-printing
                             let hostName = URL(string: host)?.host(percentEncoded: false) ?? host
                             self.logger.info("🐳 Resolved Docker host at: \(hostName)")
                             client = hostClient

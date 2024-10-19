@@ -1,9 +1,16 @@
 import XCTest
+import Logging
+
 @testable import Testcontainers
 
 final class TestContainersTests: XCTestCase {
 
-    var container: GenericContainer!
+    var logger: Logger = Logger(label: String(describing: TestContainersTests.self))
+
+    required init(name: String, testClosure: @escaping XCTestCaseClosure) {
+        super.init(name: name, testClosure: testClosure)
+        logger.logLevel = .info
+    }
 
     override class func tearDown() {
         super.tearDown()
@@ -15,10 +22,11 @@ final class TestContainersTests: XCTestCase {
 
     func test_start_ThenRemoveContainer_shouldBeSuccess_async_await() async throws {
         var success = false
+
         do {
-            container = try GenericContainer(name: "redis", port: 6379)
+            let container = try GenericContainer(name: "redis", port: 6379, logger: logger)
             let response = try await container.start().get()
-            print(response.Name)
+            logger.info("Container Name: \(response.Name)")
             try await container.remove().get()
             success = true
             XCTAssertEqual(success, true)
@@ -32,17 +40,16 @@ final class TestContainersTests: XCTestCase {
         let expectation = expectation(description: "test_startThenRemoveContainer_shouldBeSuccess")
         var success = false
 
-        container = try GenericContainer(name: "redis", port: 6379)
+        let container = try GenericContainer(name: "redis", port: 6379, logger: logger)
         container
             .start()
-            .map { _ in self.container }
+            .map { _ in container }
             .flatMap { container in
                 container.remove()
             }
             .whenComplete { result in
                 switch result {
-                case let .success(response):
-                    print(response)
+                case .success:
                     success = true
                     XCTAssertEqual(success, true)
                 case let .failure(error):
@@ -64,17 +71,16 @@ final class TestContainersTests: XCTestCase {
         // container = GenericContainer(name: "rabbitmq", tag: "3-alpine", port: 6379)
         // let params = ImageParams(name: "redis", tag: "7.2.5", src: nil, repo: nil)
         // container = GenericContainer(image: params, port: 6379)
-        container = try GenericContainer(image: "redis:7.2.5", port: 6379)
+        let container = try GenericContainer(image: "redis:7.2.5", port: 6379, logger: logger)
         container
             .start()
-            .map { _ in self.container }
+            .map { _ in container }
             .flatMap { container in
                 container.remove()
             }
             .whenComplete { result in
                 switch result {
-                case let .success(response):
-                    print(response)
+                case .success:
                     success = true
                     XCTAssertEqual(success, true)
                 case let .failure(error):

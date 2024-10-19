@@ -48,7 +48,7 @@ extension Docker {
 
     func create(container configuration: ContainerConfig) -> EventLoopFuture<Docker.Container> {
         let request = Docker.Container.Request.Create(configuration: configuration)
-        logger.info("📦 Creating container for \(configuration.Image)...")
+        logger.debug("📦 Creating container using configuration: \(configuration)")
         return client.send(request).map {
             self.logger.info("📦 Created container: \($0.Id)")
             return Docker.Container(id: $0.Id, client: self.client, logger: self.logger) 
