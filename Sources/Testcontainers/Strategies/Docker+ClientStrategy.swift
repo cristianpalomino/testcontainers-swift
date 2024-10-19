@@ -10,12 +10,22 @@ import Logging
 import NIO
 
 final class DockerClientStrategy {
-    
-    var strategies: [DockerClientStrategyProtocol] = [
-        TestcontainersStrategy(),
-        UnixSocketStrategy()
-    ]
-    
+
+    let logger: Logger
+    let strategies: [DockerClientStrategyProtocol]
+
+    init(logger: Logger, strategies: [DockerClientStrategyProtocol] = []) {
+        self.logger = logger
+        if strategies.isEmpty {
+            self.strategies = [
+                TestcontainersStrategy(logger: logger),
+                UnixSocketStrategy(logger: logger)
+            ]
+        } else {
+            self.strategies = strategies
+        }
+    }
+
     func resolve() -> DockerHTTPClient? {
         for strategy in strategies {
             if let client = strategy.resolve() {
@@ -34,7 +44,7 @@ protocol DockerClientStrategyProtocol {
 }
 
 extension DockerClientStrategyProtocol {
-    
+
     func resolve() -> DockerHTTPClient? {
         let dispatchGroup = DispatchGroup()
         var client: DockerHTTPClient?
@@ -42,18 +52,18 @@ extension DockerClientStrategyProtocol {
 
         for host in getHosts() {
             dispatchGroup.enter()
-            let hostName = URL(string: host)?.host(percentEncoded: false) ?? host
-            logger.info("🔍 Resolving Docker host at: \(hostName)")
+            logger.debug("Resolving Docker host: \(host)")
 
             let hostClient = DockerHTTPClient(host: host)
-            let docker = Docker(client: hostClient)
-            
+            let docker = Docker(client: hostClient, logger: logger)
+
             docker.ping().whenComplete { result in
                 queue.sync {
                     if client == nil {
                         switch result {
                         case .success:
-                            self.logger.debug("Successfull ping to host: \(host)")
+                            let hostName = URL(string: host)?.host(percentEncoded: false) ?? host
+                            self.logger.info("🐳 Resolved Docker host at: \(hostName)")
                             client = hostClient
                         case .failure(let error):
                             self.logger.debug("Failed ping to host: \(host), error: \(error)")
@@ -63,7 +73,7 @@ extension DockerClientStrategyProtocol {
                 }
             }
         }
-        
+
         dispatchGroup.wait()
         return client
     }

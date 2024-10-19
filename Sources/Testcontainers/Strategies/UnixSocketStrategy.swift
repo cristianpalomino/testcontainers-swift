@@ -9,9 +9,12 @@ import Foundation
 import Logging
 
 final class UnixSocketStrategy: DockerClientStrategyProtocol {
-    
-    let logger: Logger = Logger(label: String(describing: UnixSocketStrategy.self))
-    
+    let logger: Logger
+
+    init(logger: Logger) {
+        self.logger = logger
+    }
+
     var home: URL {
         return FileManager.default.homeDirectoryForCurrentUser
     }
@@ -29,7 +32,7 @@ final class UnixSocketStrategy: DockerClientStrategyProtocol {
             getSocketPathFromRunDir().relativePath
         ]
     }
-    
+
     func getHosts() -> [String] {
         var hosts: [String] = []
         for path in paths {
@@ -48,14 +51,14 @@ final class UnixSocketStrategy: DockerClientStrategyProtocol {
             .appendingPathComponent("run")
             .appendingPathComponent("docker.sock")
     }
-    
+
     private func getSocketPathFromHomeDesktopDir() -> URL {
         return home
             .appendingPathComponent(".docker")
             .appendingPathComponent("desktop")
             .appendingPathComponent("docker.sock")
     }
-    
+
     private func getSocketPathFromRunDir() -> URL {
         let uid = getuid()
         return URL(fileURLWithPath: "/run")

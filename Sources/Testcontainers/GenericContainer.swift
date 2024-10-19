@@ -4,30 +4,30 @@ import Logging
 import NIO
 
 public final class GenericContainer {
-    
+
     static let uuid = UUID().uuidString
-    
+
     private let logger: Logger
     private let imageParams: DockerImageName
     private let configuration: ContainerConfig
-    
+
     private var docker: Docker?
     private var container: Docker.Container?
     private var image: Docker.Image?
-    
+
     public init(image: DockerImageName, configuration: ContainerConfig, logger: Logger) {
         self.imageParams = image
         self.configuration = configuration
         self.logger = logger
-        
-        guard let client = DockerClientStrategy().resolve() else {
+
+        guard let client = DockerClientStrategy(logger: logger).resolve() else {
             self.docker = nil
             self.logger.error("❌ Unable to resolve a Docker client")
             return
         }
-        self.docker = Docker(client: client)
+        self.docker = Docker(client: client, logger: logger)
     }
-    
+
     public convenience init(
         image: DockerImageName,
         port: Int,
@@ -36,7 +36,7 @@ public final class GenericContainer {
         let configuration: ContainerConfig = .build(image: image.name, tag: image.tag, exposed: port)
         self.init(image: image, configuration: configuration, logger: logger)
     }
-    
+
     public convenience init(
         name: String,
         tag: String = "latest",
@@ -47,7 +47,7 @@ public final class GenericContainer {
         let image = DockerImageName(name: name, tag: tag)
         self.init(image: image, configuration: configuration, logger: logger)
     }
-    
+
     public convenience init(
         image: String,
         port: Int,
@@ -57,13 +57,13 @@ public final class GenericContainer {
         let configuration: ContainerConfig = .build(image: image.name, tag: image.tag, exposed: port)
         self.init(image: image, configuration: configuration, logger: logger)
     }
-    
+
     public func start() -> EventLoopFuture<ContainerInspectInfo> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
                 .makeFailedFuture("Unable to resolve a Docker client")
         }
-        
+
         let infoFuture = docker.info()
         let versionFuture = infoFuture.and(docker.version())
             .map { info, version in
@@ -74,7 +74,7 @@ public final class GenericContainer {
                 self.logger.info("→ Total Memory: \(info.MemTotal / (1024 * 1024)) MB")
                 self.logger.info("→ Labels: \(info.Labels)")
             }
-        
+
         return versionFuture.flatMap { _ in
             docker.pull(params: self.imageParams).map { image in
                 self.image = image
@@ -91,17 +91,17 @@ public final class GenericContainer {
             container.inspect()
         }
     }
-    
+
     public func remove() -> EventLoopFuture<Void> {
         guard let docker else {
             return MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
                 .makeFailedFuture("Unable to resolve a Docker client")
         }
-        
+
         guard let container = container else {
             return docker.client.eventLoop.next().makeFailedFuture("Container not found")
         }
-        
+
         return container.kill()
     }
 }
