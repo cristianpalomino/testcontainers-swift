@@ -59,12 +59,12 @@ public final class GenericContainer {
         try self.init(image: image, configuration: configuration, logger: logger)
     }
 
-    public func start(retrieveHostInfo: Bool = true) -> EventLoopFuture<ContainerInspectInfo> {
+    public func start(retrieveHostInfo: Bool = false) -> EventLoopFuture<ContainerInspectInfo> {
         if retrieveHostInfo {
             let infoFuture = docker.info()
             let versionFuture = infoFuture.and(docker.version())
                 .map { info, version in
-                    self.logger.info("🐳 Connected to Docker:")
+                    self.logger.info("🐳 Docker Info:")
                     self.logger.info("→ Server Version: \(info.ServerVersion)")
                     self.logger.info("→ API Version: \(version.ApiVersion)")
                     self.logger.info("→ Operating System: \(info.OperatingSystem)")
