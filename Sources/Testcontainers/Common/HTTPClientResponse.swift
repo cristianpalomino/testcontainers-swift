@@ -12,10 +12,15 @@ import NIOCore
 import AsyncHTTPClient
 
 final class HTTPClientResponse: HTTPClientResponseDelegate {
-    
-    let logger: Logger = Logger(label: String(describing: HTTPClientResponse.self))
+
+    let logger: Logger
+
+    init(logger: Logger = Logger(label: String(describing: HTTPClientResponse.self))) {
+        self.logger = logger
+    }
+
     var response: Data = Data()
-    
+
     func didReceiveHead(task: HTTPClient.Task<Data>, _ head: HTTPResponseHead) -> EventLoopFuture<Void> {
         switch head.status.code {
         case 200..<300:
@@ -36,7 +41,7 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
             return task.eventLoop.makeFailedFuture("Unexpected status code: \(head.status)")
         }
     }
-    
+
     func didReceiveBodyPart(task: HTTPClient.Task<Data>, _ buffer: ByteBuffer) -> EventLoopFuture<Void> {
         var mutableBuffer = buffer
         if let chunk = buffer.getString(at: 0, length: buffer.readableBytes),
@@ -48,11 +53,11 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
         }
         return task.eventLoop.makeSucceededFuture(())
     }
-    
+
     func didFinishRequest(task: AsyncHTTPClient.HTTPClient.Task<Data>) throws -> Data {
         return response
     }
-    
+
     func didReceiveError(task: HTTPClient.Task<Data>, _ error: Error) {
         logger.debug("Request failed with error: \(String(describing: error))")
     }

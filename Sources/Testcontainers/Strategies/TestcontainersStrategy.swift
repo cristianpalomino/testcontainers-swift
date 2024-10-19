@@ -61,7 +61,7 @@ struct TestcontainersStrategy: DockerClientStrategyProtocol {
                 }
             }
         } catch {
-            logger.debug("Error reading the file: \(String(describing: error))")
+            logger.error("Error reading the file: \(String(describing: error))")
         }
 
         return properties

@@ -54,7 +54,7 @@ extension DockerClientStrategyProtocol {
             dispatchGroup.enter()
             logger.debug("Resolving Docker host: \(host)")
 
-            let hostClient = DockerHTTPClient(host: host)
+            let hostClient = DockerHTTPClient(host: host, logger: logger)
             let docker = Docker(client: hostClient, logger: logger)
 
             docker.ping().whenComplete { result in
