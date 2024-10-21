@@ -9,15 +9,15 @@ import Foundation
 import Logging
 
 struct TestcontainersStrategy: DockerClientStrategyProtocol {
-    
-    let logger: Logger = Logger(label: String(describing: TestcontainersStrategy.self))
+    let logger: Logger
     var paths: [String]
-    
-    init(paths: [String] = []) {
+
+    init(logger: Logger, paths: [String] = []) {
+        self.logger = logger
         self.paths = paths
         self.loadPaths()
     }
-    
+
     mutating func loadPaths() {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let path = home.appendingPathComponent(".testcontainers.properties").path
@@ -29,7 +29,7 @@ struct TestcontainersStrategy: DockerClientStrategyProtocol {
             paths.append(dockerHost.replacingOccurrences(of: "tcp", with: "http"))
         }
     }
-    
+
     func getHosts() -> [String] {
         var hosts: [String] = []
         for path in paths {
@@ -37,13 +37,13 @@ struct TestcontainersStrategy: DockerClientStrategyProtocol {
         }
         return hosts
     }
-    
+
     private func loadProperties(from path: String) -> [String: String] {
         var properties: [String: String] = [:]
         do {
             let fileContents = try String(contentsOfFile: path, encoding: .utf8)
             let lines = fileContents.split(separator: "\n")
-            
+
             for line in lines {
                 let trimmedLine = line.trimmingCharacters(in: .whitespaces)
                 if trimmedLine.hasPrefix("#") || trimmedLine.isEmpty {
@@ -61,9 +61,9 @@ struct TestcontainersStrategy: DockerClientStrategyProtocol {
                 }
             }
         } catch {
-            logger.info("Error reading the file: \(String(describing: error))")
+            logger.debug("Error reading the file \(path): \(String(describing: error))")
         }
-        
+
         return properties
     }
 }

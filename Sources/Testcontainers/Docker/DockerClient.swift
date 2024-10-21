@@ -18,23 +18,24 @@ protocol DockerClientProtocol {
 }
 
 final class DockerHTTPClient: DockerClientProtocol {
-    
+
     var host: String
     let client: HTTPClient
     lazy var eventLoop = client.eventLoopGroup.next()
-    
-    let logger: Logger = Logger(label: String(describing: DockerHTTPClient.self))
-    
-    init(host: String) {
+
+    let logger: Logger
+
+    init(host: String, logger: Logger = Logger(label: String(describing: DockerHTTPClient.self))) {
         self.host = host
+        self.logger = logger
         let configuration = HTTPClient.Configuration()
         self.client = HTTPClient(configuration: configuration)
     }
-    
+
     deinit {
         _ = client.shutdown()
     }
-    
+
     func send<T>(_ request: T) -> NIOCore.EventLoopFuture<T.Response> where T : Request {
         let promise = eventLoop.makePromise(of: T.Response.self)
         client.execute(request: request.make(host: host, logger: logger), delegate: HTTPClientResponse())
@@ -52,7 +53,7 @@ final class DockerHTTPClient: DockerClientProtocol {
                     promise.fail(error)
                 }
             }
-        
+
         return promise.futureResult
     }
 }

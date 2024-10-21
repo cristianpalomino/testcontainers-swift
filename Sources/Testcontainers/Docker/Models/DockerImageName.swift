@@ -8,10 +8,14 @@
 import Foundation
 
 public struct DockerImageName {
-    
+
     public let name: String
     public let tag: String
-    
+
+    var conventionName: String {
+        "\(name):\(tag)"
+    }
+
     public init(image: String) throws {
         let items = image.split(separator: ":")
         guard
@@ -21,11 +25,11 @@ public struct DockerImageName {
         else {
             throw "Unable to retrieve \(image), use the next format <name>:<tag>"
         }
-        
+
         self.name = String(name)
         self.tag = String(tag)
     }
-    
+
     public init(name: String, tag: String) {
         self.name = name
         self.tag = tag
