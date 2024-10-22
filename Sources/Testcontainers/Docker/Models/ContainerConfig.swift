@@ -213,9 +213,11 @@ public struct DeviceRequest: Codable {
 
 public struct PortBinding: Codable {
     public var HostPort: String?
+    public var HostIp: String?
     
-    public init(hostPort: String? = nil) {
+    public init(hostPort: String? = nil, hostIp: String? = nil) {
         self.HostPort = hostPort
+        self.HostIp = hostIp
     }
 }
 

@@ -167,7 +167,7 @@ public extension ContainerInspectInfo {
         public let Env: [String]
         public let Cmd: [String]
         public let Image: String
-//        public let Volumes: [String: String]?
+        //        public let Volumes: [String: String]?
         public let WorkingDir: String
         public let Entrypoint: [String]
         public let OnBuild: [String]?
@@ -210,5 +210,30 @@ public extension ContainerInspectInfo {
         public let GlobalIPv6Address: String
         public let GlobalIPv6PrefixLen: Int
         public let DNSNames: [String]?
+    }
+}
+
+public extension ContainerInspectInfo {
+    
+    func getHost(port: Int, `protocol`: String = "tcp") -> String {
+        guard
+            let ports = self.NetworkSettings.Ports["\(port)/\(`protocol`)"] as? [PortBinding],
+            let first = ports.first
+        else {
+            return "??"
+        }
+        
+        return first.HostIp
+    }
+    
+    func getMappedPort(port: Int, `protocol`: String = "tcp") -> Int {
+        guard
+            let ports = self.NetworkSettings.Ports["\(port)/\(`protocol`)"] as? [PortBinding],
+            let first = ports.first
+        else {
+            return -1
+        }
+        
+        return Int(first.HostPort) ?? -1
     }
 }
