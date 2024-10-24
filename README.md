@@ -8,6 +8,20 @@ Testcontainers for Swift is a library designed to bring official Testcontainers 
 
 We welcome contributions to this exciting and fun open-source project 🫵.
 
+## Installation
+
+Add the following dependency to your `Package.swift` file:
+
+```swift
+.package(url: "https://github.com/cristianpalomino/testcontainers-swift.git", from: "0.0.1")
+```
+
+Then, add it to your target `dependencies` section like this:
+
+```swift                
+.product(name: "Testcontainers", package: "testcontainers-swift")
+```
+
 ## Features
 
 - Create new Generic Docker containers.
