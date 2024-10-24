@@ -48,6 +48,7 @@ extension DockerClientStrategyProtocol {
     func resolve() -> DockerHTTPClient? {
         let dispatchGroup = DispatchGroup()
         var client: DockerHTTPClient?
+        var clientReceived = false
         let queue = DispatchQueue(label: "testcontainers.client.strategy")
 
         for host in getHosts() {
@@ -66,6 +67,7 @@ extension DockerClientStrategyProtocol {
                             let hostName = URLComponents(string: host)?.host ?? host
                             self.logger.info("🐳 Resolved Docker host at: \(hostName)")
                             client = hostClient
+                            clientReceived = true
                         case .failure(let error):
                             self.logger.debug("Failed ping to host: \(host), error: \(error)")
                         }
@@ -75,7 +77,14 @@ extension DockerClientStrategyProtocol {
             }
         }
 
-        dispatchGroup.wait()
+        // We want to exit as soon as we get a client back
+        while !clientReceived && !Task.isCancelled {
+            // If we get success from .wait this means all tasks have completed, so we exit
+            if dispatchGroup.wait(timeout: .now() + .milliseconds(100)) == .success {
+                break
+            }
+        }
+
         return client
     }
 }
