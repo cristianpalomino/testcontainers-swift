@@ -27,7 +27,7 @@ final class RedisClientTests: XCTestCase {
                 do {
                     let redisConfig = RedisConfig(
                         host: "localhost",
-                        port: info.getMappedPort(port: 6379)
+                        port: 6379
                     )
                     self.app = try RedisClientApp(redisConfig: redisConfig)
                     try self.app.run()

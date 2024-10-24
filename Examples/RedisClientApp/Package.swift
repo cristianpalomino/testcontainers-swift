@@ -9,19 +9,19 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/redis.git", from: "4.0.0"),
-        .package(name: "Testcontainers", path: "../../../testcontainers-swift")
+        .package(url: "https://github.com/cristianpalomino/testcontainers-swift.git", from: "0.0.1")
     ],
     targets: [
         .target(
             name: "RedisClientApp", dependencies: [
                 .product(name: "Vapor", package: "vapor"),
-                .product(name: "Redis", package: "redis"),
+                .product(name: "Redis", package: "redis")
             ]),
         .testTarget(
             name: "RedisClientAppTests",
             dependencies: [
-                "Testcontainers",
-                "RedisClientApp"
+                "RedisClientApp",
+                .product(name: "Testcontainers", package: "testcontainers-swift")
             ]),
     ]
 )
