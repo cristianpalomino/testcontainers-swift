@@ -6,3 +6,27 @@ DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+
+# iOS Example specific ignores
+Examples/iOSExample/build/
+Examples/iOSExample/*.xcodeproj/xcuserdata/
+Examples/iOSExample/*.xcworkspace/xcuserdata/
+Examples/iOSExample/*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+Examples/iOSExample/*.xcworkspace/xcshareddata/*.xccheckout
+Examples/iOSExample/*.xcworkspace/xcshareddata/*.xcscmblueprint
+Examples/iOSExample/DerivedData/
+Examples/iOSExample/.build/
+Examples/iOSExample/Pods/
+Examples/iOSExample/*.xcarchive
+Examples/iOSExample/*.xcresult
+
+# iOS Example temporary files
+Examples/iOSExample/*.moved-aside
+Examples/iOSExample/*.pbxuser
+Examples/iOSExample/*.mode1v3
+Examples/iOSExample/*.mode2v3
+Examples/iOSExample/*.perspectivev3
+Examples/iOSExample/*.hmap
+Examples/iOSExample/*.ipa
+Examples/iOSExample/*.dSYM.zip
+Examples/iOSExample/*.dSYM

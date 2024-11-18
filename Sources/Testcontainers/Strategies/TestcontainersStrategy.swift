@@ -18,8 +18,15 @@ struct TestcontainersStrategy: DockerClientStrategyProtocol {
         self.loadPaths()
     }
 
+    var home: URL {
+#if os(iOS)
+        return URL(fileURLWithPath: NSHomeDirectory())
+#else
+        return FileManager.default.homeDirectoryForCurrentUser
+#endif
+    }
+
     mutating func loadPaths() {
-        let home = FileManager.default.homeDirectoryForCurrentUser
         let path = home.appendingPathComponent(".testcontainers.properties").path
         let properties = loadProperties(from: path)
         if let tcHost = properties["tc.host"] {
