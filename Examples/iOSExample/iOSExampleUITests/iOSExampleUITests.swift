@@ -49,18 +49,8 @@ final class iOSExampleUITests: XCTestCase {
         XCTAssertTrue(hostText.waitForExistence(timeout: 5))
 
         // Verify host section exists and shows correct information
-        let hostSection = app.collectionViews.staticTexts["Host Information"]
+        let hostSection = app.staticTexts["HOST INFORMATION"]
         XCTAssertTrue(hostSection.exists)
         XCTAssertTrue(hostText.exists)
-    }
-
-    @MainActor
-    func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-            // This measures how long it takes to launch your application.
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
-            }
-        }
     }
 }

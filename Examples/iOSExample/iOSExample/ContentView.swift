@@ -19,10 +19,21 @@ final class HTTPClient {
     let host: String
     
     init(host: String = "https://httpbin.org", port: Int? = nil) {
-        if let port = port {
-            self.host = "\(host):\(port)"
+        if ProcessInfo.processInfo.arguments.contains("UI_TEST") {
+            let testHost = ProcessInfo.processInfo.environment["HOST"] ?? host
+            let testPort = ProcessInfo.processInfo.environment["PORT"].flatMap(Int.init)
+            
+            if let testPort = testPort {
+                self.host = "\(testHost):\(testPort)"
+            } else {
+                self.host = testHost
+            }
         } else {
-            self.host = host
+            if let port = port {
+                self.host = "\(host):\(port)"
+            } else {
+                self.host = host
+            }
         }
     }
     

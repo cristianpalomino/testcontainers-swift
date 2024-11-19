@@ -49,6 +49,13 @@
 			);
 			target = 40DA99A12CE9781E007DC28F /* iOSExample */;
 		};
+		40DB51C42CECEE7F00481413 /* Exceptions for "iOSExampleUITests" folder in "iOSExampleUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 40DA99C32CE97887007DC28F /* iOSExampleUITests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -62,6 +69,9 @@
 		};
 		40DA99C52CE97887007DC28F /* iOSExampleUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				40DB51C42CECEE7F00481413 /* Exceptions for "iOSExampleUITests" folder in "iOSExampleUITests" target */,
+			);
 			path = iOSExampleUITests;
 			sourceTree = "<group>";
 		};
@@ -487,6 +497,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOSExampleUITests/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.testcontainers.iOSExampleUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -503,6 +515,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOSExampleUITests/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.testcontainers.iOSExampleUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
