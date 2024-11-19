@@ -8,7 +8,7 @@
 import Foundation
 
 extension ContainerConfig {
-    
+
     // TODO: To improve...
     static func build(image name: String, tag: String, exposed port: Int) -> ContainerConfig {
         let portBinding = PortBinding(hostPort: "0")
@@ -47,7 +47,7 @@ public struct ContainerConfig: Codable {
     public var StopTimeout: Int?
     public var HostConfig: HostConfig?
     public var NetworkingConfig: NetworkingConfig?
-    
+
     public init(hostname: String? = nil, domainname: String? = nil, user: String? = nil, attachStdin: Bool? = nil, attachStdout: Bool? = nil, attachStderr: Bool? = nil, tty: Bool? = nil, openStdin: Bool? = nil, stdinOnce: Bool? = nil, env: [String]? = nil, cmd: [String]? = nil, entrypoint: String? = nil, image: String, labels: [String : String]? = nil, volumes: [String : Volume]? = nil, workingDir: String? = nil, networkDisabled: Bool? = nil, macAddress: String? = nil, exposedPorts: [String : ExposedPort]? = nil, stopSignal: String? = nil, stopTimeout: Int? = nil, hostConfig: HostConfig? = nil, networkingConfig: NetworkingConfig? = nil) {
         self.Hostname = hostname
         self.Domainname = domainname
@@ -130,7 +130,7 @@ public struct HostConfig: Codable {
     public var CgroupParent: String?
     public var VolumeDriver: String?
     public var ShmSize: Int?
-    
+
     public init(binds: [String]? = nil, links: [String]? = nil, memory: Int? = nil, memorySwap: Int? = nil, memoryReservation: Int? = nil, nanoCpus: Int? = nil, cpuPercent: Int? = nil, cpuShares: Int? = nil, cpuPeriod: Int? = nil, cpuRealtimePeriod: Int? = nil, cpuRealtimeRuntime: Int? = nil, cpuQuota: Int? = nil, cpusetCpus: String? = nil, cpusetMems: String? = nil, maximumIOps: Int? = nil, maximumIOBps: Int? = nil, blkioWeight: Int? = nil, blkioWeightDevice: [BlkioWeightDevice]? = nil, blkioDeviceReadBps: [BlkioDeviceReadBps]? = nil, blkioDeviceReadIOps: [BlkioDeviceReadIOps]? = nil, blkioDeviceWriteBps: [BlkioDeviceWriteBps]? = nil, blkioDeviceWriteIOps: [BlkioDeviceWriteIOps]? = nil, deviceRequests: [DeviceRequest]? = nil, memorySwappiness: Int? = nil, oomKillDisable: Bool? = nil, oomScoreAdj: Int? = nil, pidMode: String? = nil, pidsLimit: Int? = nil, portBindings: [String : [PortBinding]]? = nil, publishAllPorts: Bool? = nil, privileged: Bool? = nil, readonlyRootfs: Bool? = nil, dns: [String]? = nil, dnsOptions: [String]? = nil, dnsSearch: [String]? = nil, volumesFrom: [String]? = nil, capAdd: [String]? = nil, capDrop: [String]? = nil, groupAdd: [String]? = nil, restartPolicy: RestartPolicy? = nil, autoRemove: Bool? = nil, networkMode: String? = nil, devices: [Device]? = nil, ulimits: [Ulimit]? = nil, logConfig: LogConfig? = nil, securityOpt: [String]? = nil, storageOpt: [String : String]? = nil, cgroupParent: String? = nil, volumeDriver: String? = nil, shmSize: Int? = nil) {
         self.Binds = binds
         self.Links = links
@@ -201,7 +201,7 @@ public struct DeviceRequest: Codable {
     public var DeviceIDs: [String]?
     public var Capabilities: [[String]]?
     public var Options: [String: String]?
-    
+
     public init(driver: String? = nil, count: Int? = nil, deviceIDs: [String]? = nil, capabilities: [[String]]? = nil, options: [String : String]? = nil) {
         self.Driver = driver
         self.Count = count
@@ -213,7 +213,7 @@ public struct DeviceRequest: Codable {
 
 public struct PortBinding: Codable {
     public var HostPort: String?
-    
+
     public init(hostPort: String? = nil) {
         self.HostPort = hostPort
     }
@@ -222,7 +222,7 @@ public struct PortBinding: Codable {
 public struct RestartPolicy: Codable {
     public var Name: String?
     public var MaximumRetryCount: Int?
-    
+
     public init(name: String? = nil, maximumRetryCount: Int? = nil) {
         self.Name = name
         self.MaximumRetryCount = maximumRetryCount
@@ -236,7 +236,7 @@ public struct Ulimit: Codable {}
 public struct LogConfig: Codable {
     public var `Type`: String?
     public var Config: [String: String]?
-    
+
     public init(type: String? = nil, config: [String : String]? = nil) {
         self.Type = type
         self.Config = config
@@ -245,7 +245,7 @@ public struct LogConfig: Codable {
 
 public struct NetworkingConfig: Codable {
     public var EndpointsConfig: [String: EndpointConfig]?
-    
+
     public init(endpointsConfig: [String : EndpointConfig]? = nil) {
         self.EndpointsConfig = endpointsConfig
     }
@@ -255,7 +255,7 @@ public struct EndpointConfig: Codable {
     public var IpamConfig: IPAMConfig?
     public var Links: [String]?
     public var Aliases: [String]?
-    
+
     public init(ipamConfig: IPAMConfig? = nil, links: [String]? = nil, aliases: [String]? = nil) {
         self.IpamConfig = ipamConfig
         self.Links = links
@@ -267,7 +267,7 @@ public struct IPAMConfig: Codable {
     public var Ipv4Address: String?
     public var Ipv6Address: String?
     public var LinkLocalIPs: [String]?
-    
+
     public init(ipv4Address: String? = nil, ipv6Address: String? = nil, linkLocalIPs: [String]? = nil) {
         self.Ipv4Address = ipv4Address
         self.Ipv6Address = ipv6Address
