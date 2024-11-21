@@ -18,6 +18,10 @@ public final class GenericContainer {
     private var docker: Docker
     private var container: Docker.Container?
 
+    private static let ryukService = RyukService(
+        logger: Logger(label: "org.testcontainers.ryuk")
+    )
+
     public init(image: DockerImageName, configuration: ContainerConfig, logger: Logger) throws {
         self.imageParams = image
         self.configuration = configuration
@@ -60,6 +64,15 @@ public final class GenericContainer {
     }
 
     public func start(retrieveHostInfo: Bool = false) -> EventLoopFuture<ContainerInspectInfo> {
+        if let ryukFuture = Self.ryukService.start() {
+            return ryukFuture.flatMap { _ in
+                self.startContainer(retrieveHostInfo: retrieveHostInfo)
+            }
+        }
+        return startContainer(retrieveHostInfo: retrieveHostInfo)
+    }
+
+    private func startContainer(retrieveHostInfo: Bool) -> EventLoopFuture<ContainerInspectInfo> {
         if retrieveHostInfo {
             let infoFuture = docker.info()
             let versionFuture = infoFuture.and(docker.version())

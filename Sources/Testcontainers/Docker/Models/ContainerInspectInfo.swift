@@ -26,7 +26,7 @@ public struct ContainerInspectInfo: Decodable {
     public let ProcessLabel: String
     public let AppArmorProfile: String
     public let ExecIDs: String?
-    public let HostConfig: HostConfig
+    public let HostConfig: HostConfig?
     public let GraphDriver: GraphDriver
     public let Mounts: [Mount]
     public let Config: Config
@@ -54,13 +54,13 @@ public extension ContainerInspectInfo {
         public let ContainerIDFile: String
         public let LogConfig: LogConfig
         public let NetworkMode: String
-        public let PortBindings: [String: [PortBinding]]
+        public let PortBindings: [String: [PortBinding]]?
         public let RestartPolicy: RestartPolicy
         public let AutoRemove: Bool
         public let VolumeDriver: String
         public let VolumesFrom: [String]?
         public let ConsoleSize: [Int]
-        public let CapAdd: [String]
+        public let CapAdd: [String]?
         public let CapDrop: [String]?
         public let CgroupnsMode: String
         public let Dns: [String]?
@@ -111,8 +111,8 @@ public extension ContainerInspectInfo {
         public let CpuPercent: Int
         public let IOMaximumIOps: Int
         public let IOMaximumBandwidth: Int
-        public let MaskedPaths: [String]
-        public let ReadonlyPaths: [String]
+        public let MaskedPaths: [String]?
+        public let ReadonlyPaths: [String]?
     }
     
     struct LogConfig: Decodable {
@@ -160,7 +160,7 @@ public extension ContainerInspectInfo {
         public let AttachStdin: Bool
         public let AttachStdout: Bool
         public let AttachStderr: Bool
-        public let ExposedPorts: [String: [String: String]]
+        public let ExposedPorts: [String: [String: String]]?
         public let Tty: Bool
         public let OpenStdin: Bool
         public let StdinOnce: Bool
@@ -169,7 +169,7 @@ public extension ContainerInspectInfo {
         public let Image: String
 //        public let Volumes: [String: String]?
         public let WorkingDir: String
-        public let Entrypoint: [String]
+        public let Entrypoint: [String]?
         public let OnBuild: [String]?
         public let Labels: [String: String]
     }
