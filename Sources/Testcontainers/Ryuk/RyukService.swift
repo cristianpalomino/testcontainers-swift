@@ -3,16 +3,18 @@ import Logging
 import NIO
 
 public final class RyukService {
+    
+    public let sessionId: String
     private let logger: Logger
-    private let sessionId: String
     private var container: GenericContainer?
     private static var isStarted = false
+    private var containerInfo: ContainerInspectInfo?
     
     init(logger: Logger, sessionId: String = UUID().uuidString) {
         self.logger = logger
         self.sessionId = sessionId
     }
-    
+
     func start() -> EventLoopFuture<Void>? {
         guard !Self.isStarted, !isRyukDisabled() else {
             if isRyukDisabled() {
@@ -46,7 +48,9 @@ public final class RyukService {
             )
             
             Self.isStarted = true
-            return container?.start().map { _ in
+            
+            return container?.start().map { info in
+                self.containerInfo = info
                 self.logger.info("🧹 Started Ryuk container")
             }
         } catch {
@@ -57,5 +61,23 @@ public final class RyukService {
     
     private func isRyukDisabled() -> Bool {
         ProcessInfo.processInfo.environment["TESTCONTAINERS_RYUK_DISABLED"] == "true"
+    }
+}
+
+public extension RyukService {
+    func getContainerInfo() -> ContainerInspectInfo? {
+        containerInfo
+    }
+
+    func remove() -> EventLoopFuture<Void> {
+        return container?
+            .stop() 
+            .flatMap { _ in
+                self.container?.remove()
+        }.map { _ in
+            self.logger.info("🧹 Removed Ryuk container")
+                self.containerInfo = nil
+                self.container = nil
+        }
     }
 }

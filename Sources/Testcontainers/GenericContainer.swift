@@ -18,14 +18,17 @@ public final class GenericContainer {
     private var docker: Docker
     private var container: Docker.Container?
 
-    private static let ryukService = RyukService(
-        logger: Logger(label: "org.testcontainers.ryuk")
-    )
+    public let ryukService: RyukService
 
     public init(image: DockerImageName, configuration: ContainerConfig, logger: Logger) throws {
         self.imageParams = image
         self.configuration = configuration
         self.logger = logger
+
+        self.ryukService = RyukService(
+            logger: Logger(label: "org.testcontainers.ryuk"),
+            sessionId: UUID().uuidString
+        )
 
         guard let client = DockerClientStrategy(logger: logger).resolve() else {
             throw ContainerError.unableToResolve
@@ -64,7 +67,7 @@ public final class GenericContainer {
     }
 
     public func start(retrieveHostInfo: Bool = false) -> EventLoopFuture<ContainerInspectInfo> {
-        if let ryukFuture = Self.ryukService.start() {
+        if let ryukFuture = ryukService.start() {
             return ryukFuture.flatMap { _ in
                 self.startContainer(retrieveHostInfo: retrieveHostInfo)
             }
@@ -108,13 +111,17 @@ public final class GenericContainer {
         }
     }
 
-    public func remove() -> EventLoopFuture<Void> {
-        guard let container = container else {
-            return docker.client.eventLoop.next().makeFailedFuture("Container not found")
+    public func remove() -> EventLoopFuture<Void>? {
+        let containerRemoveFuture = container?.stop().flatMap { _ in
+            self.container?.remove()
+        }
+        let ryukRemoveFuture = ryukService?.stop().flatMap { _ in
+            self.ryukService.remove()
         }
 
-        return container.stop().flatMap { _ in
-            container.remove()
+        return containerRemoveFuture.and(ryukRemoveFuture).map { _ in
+            self.container = nil
+            self.logger.info("🗑️ Container and associated Ryuk service removed")
         }
     }
 }
