@@ -11,7 +11,7 @@ import NIOHTTP1
 import NIOCore
 import Logging
 
-protocol DockerClientProtocol {
+public protocol DockerClientProtocol {
     var host: String { get }
     var eventLoop: EventLoop { get }
     func send<T: Testcontainers.Request>(_ request: T) -> EventLoopFuture<T.Response>
