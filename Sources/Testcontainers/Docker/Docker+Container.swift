@@ -10,6 +10,14 @@ import NIOHTTP1
 import NIOCore
 import Logging
 
+public protocol DockerContainerOperations {
+    func start() -> EventLoopFuture<Void>
+    func inspect() -> EventLoopFuture<ContainerInspectInfo>
+    func stop() -> EventLoopFuture<Void>
+    func remove() -> EventLoopFuture<Void>
+    func kill() -> EventLoopFuture<Void>
+}
+
 extension Docker {
 
     final class Container {
@@ -26,7 +34,7 @@ extension Docker {
     }
 }
 
-extension Docker.Container {
+extension Docker.Container: DockerContainerOperations {
 
     func start() -> EventLoopFuture<Void> {
         let request = Docker.Container.Request.Start(id: id)

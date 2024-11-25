@@ -15,24 +15,25 @@ public final class GenericContainer {
     private let imageParams: DockerImageName
     private let configuration: ContainerConfig
 
-    private var docker: Docker
-    private var container: Docker.Container?
+    private var docker: DockerOperations
+    private var container: DockerContainerOperations?
+    private lazy var sideContainers: [SideContainer] = {
+        return [RyukSideContainer(docker: docker, logger: logger)]
+    }()
 
-    public let ryukService: RyukService
-
-    public init(image: DockerImageName, configuration: ContainerConfig, logger: Logger) throws {
+    public init(
+        image: DockerImageName,
+        configuration: ContainerConfig,
+        logger: Logger
+    ) throws {
         self.imageParams = image
         self.configuration = configuration
         self.logger = logger
 
-        self.ryukService = RyukService(
-            logger: Logger(label: "org.testcontainers.ryuk"),
-            sessionId: UUID().uuidString
-        )
-
         guard let client = DockerClientStrategy(logger: logger).resolve() else {
             throw ContainerError.unableToResolve
         }
+
         self.docker = Docker(client: client, logger: logger)
     }
 
@@ -67,61 +68,68 @@ public final class GenericContainer {
     }
 
     public func start(retrieveHostInfo: Bool = false) -> EventLoopFuture<ContainerInspectInfo> {
-        if let ryukFuture = ryukService.start() {
-            return ryukFuture.flatMap { _ in
-                self.startContainer(retrieveHostInfo: retrieveHostInfo)
-            }
-        }
-        return startContainer(retrieveHostInfo: retrieveHostInfo)
-    }
+        let hostInfoFuture = retrieveHostInfo ? self.retrieveDockerInfo() : self.docker.client.eventLoop.makeSucceededFuture(())
 
-    private func startContainer(retrieveHostInfo: Bool) -> EventLoopFuture<ContainerInspectInfo> {
-        if retrieveHostInfo {
-            let infoFuture = docker.info()
-            let versionFuture = infoFuture.and(docker.version())
-                .map { info, version in
-                    self.logger.info("🐳 Docker Info:")
-                    self.logger.info("→ Server Version: \(info.ServerVersion)")
-                    self.logger.info("→ API Version: \(version.ApiVersion)")
-                    self.logger.info("→ Operating System: \(info.OperatingSystem)")
-                    self.logger.info("→ Total Memory: \(info.MemTotal / (1024 * 1024)) MB")
-                    self.logger.info("→ Labels: \(info.Labels)")
-                }
+        let sideContainersFuture = EventLoopFuture.andAllSucceed(
+            sideContainers.map { $0.start() },
+            on: docker.client.eventLoop
+        )
 
-            return versionFuture.flatMap { _ in
+        return sideContainersFuture.flatMap { _ in
+            hostInfoFuture.flatMap { _ in
                 self.createContainer()
             }
         }
+    }
 
-        return createContainer()
+    public func remove() -> EventLoopFuture<Void> {
+        guard let container = container else {
+            return docker.client.eventLoop.next().makeFailedFuture("Container not found")
+        }
+
+        let sideContainersFuture = EventLoopFuture.andAllSucceed(
+            sideContainers.map { $0.remove() },
+            on: docker.client.eventLoop
+        )
+
+        return sideContainersFuture.flatMap { _ in
+            container.stop().flatMap { _ in
+                container.remove()
+            }
+        }
+    }
+
+    private func retrieveDockerInfo() -> EventLoopFuture<Void> {
+        let infoFuture = docker.info()
+        return infoFuture.and(docker.version())
+            .map { info, version in
+                self.logger.info("🐳 Docker Info:")
+                self.logger.info("→ Server Version: \(info.ServerVersion)")
+                self.logger.info("→ API Version: \(version.ApiVersion)")
+                self.logger.info("→ Operating System: \(info.OperatingSystem)")
+                self.logger.info("→ Total Memory: \(info.MemTotal / (1024 * 1024)) MB")
+                self.logger.info("→ Labels: \(info.Labels)")
+            }
     }
 
     private func createContainer() -> EventLoopFuture<ContainerInspectInfo> {
-        docker.pull(params: self.imageParams).map { image in
-            return image
-        }.flatMap { _ in
-            self.docker.create(container: self.configuration).map { container in
-                self.container = container
-                return container
+        return docker.pull(params: self.imageParams).flatMap { _ in
+            return self.docker.create(container: self.configuration)
+        }.flatMap { container in
+            self.container = container
+            return container.start().flatMap { _ in
+                return container.inspect()
             }
-        }.flatMap { container in
-            container.start().map { container }
-        }.flatMap { container in
-            container.inspect()
         }
     }
+}
 
-    public func remove() -> EventLoopFuture<Void>? {
-        let containerRemoveFuture = container?.stop().flatMap { _ in
-            self.container?.remove()
-        }
-        let ryukRemoveFuture = ryukService?.stop().flatMap { _ in
-            self.ryukService.remove()
-        }
+public extension GenericContainer {
+    func getSideContainer<T: SideContainer>() -> T? {
+        return sideContainers.first { $0 is T } as? T
+    }
 
-        return containerRemoveFuture.and(ryukRemoveFuture).map { _ in
-            self.container = nil
-            self.logger.info("🗑️ Container and associated Ryuk service removed")
-        }
+    func getSideContainers() -> [SideContainer] {
+        return sideContainers
     }
 }

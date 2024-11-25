@@ -11,17 +11,17 @@ import NIOHTTP1
 import NIOCore
 import AsyncHTTPClient
 
-final class HTTPClientResponse: HTTPClientResponseDelegate {
+public final class HTTPClientResponse: HTTPClientResponseDelegate {
 
     let logger: Logger
 
-    init(logger: Logger = Logger(label: String(describing: HTTPClientResponse.self))) {
+    public init(logger: Logger = Logger(label: String(describing: HTTPClientResponse.self))) {
         self.logger = logger
     }
 
     var response: Data = Data()
 
-    func didReceiveHead(task: HTTPClient.Task<Data>, _ head: HTTPResponseHead) -> EventLoopFuture<Void> {
+    public func didReceiveHead(task: HTTPClient.Task<Data>, _ head: HTTPResponseHead) -> EventLoopFuture<Void> {
         switch head.status.code {
         case 200..<300:
             logger.debug("Request succeeded with status: \(head.status)")
@@ -42,7 +42,7 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
         }
     }
 
-    func didReceiveBodyPart(task: HTTPClient.Task<Data>, _ buffer: ByteBuffer) -> EventLoopFuture<Void> {
+    public func didReceiveBodyPart(task: HTTPClient.Task<Data>, _ buffer: ByteBuffer) -> EventLoopFuture<Void> {
         var mutableBuffer = buffer
         if let chunk = buffer.getString(at: 0, length: buffer.readableBytes),
            let bytes = mutableBuffer.readBytes(length: buffer.readableBytes) {
@@ -54,11 +54,11 @@ final class HTTPClientResponse: HTTPClientResponseDelegate {
         return task.eventLoop.makeSucceededFuture(())
     }
 
-    func didFinishRequest(task: AsyncHTTPClient.HTTPClient.Task<Data>) throws -> Data {
+    public func didFinishRequest(task: AsyncHTTPClient.HTTPClient.Task<Data>) throws -> Data {
         return response
     }
 
-    func didReceiveError(task: HTTPClient.Task<Data>, _ error: Error) {
+    public func didReceiveError(task: HTTPClient.Task<Data>, _ error: Error) {
         logger.debug("Request failed with error: \(String(describing: error))")
     }
 }
