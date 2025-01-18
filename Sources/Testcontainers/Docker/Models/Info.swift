@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Info: Decodable {
+public struct Info: Decodable, Sendable {
     let ServerVersion: String
     let OperatingSystem: String
     let MemTotal: Int64
