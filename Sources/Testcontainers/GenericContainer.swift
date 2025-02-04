@@ -15,10 +15,17 @@ public final class GenericContainer {
     private let imageParams: DockerImageName
     private let configuration: ContainerConfig
 
-    private var docker: Docker
-    private var container: Docker.Container?
+    private var docker: DockerOperations
+    private var container: DockerContainerOperations?
+    private lazy var sideContainers: [SideContainer] = {
+        return [RyukSideContainer(docker: docker, logger: logger)]
+    }()
 
-    public init(image: DockerImageName, configuration: ContainerConfig, logger: Logger) throws {
+    public init(
+        image: DockerImageName,
+        configuration: ContainerConfig,
+        logger: Logger
+    ) throws {
         self.imageParams = image
         self.configuration = configuration
         self.logger = logger
@@ -26,6 +33,7 @@ public final class GenericContainer {
         guard let client = DockerClientStrategy(logger: logger).resolve() else {
             throw ContainerError.unableToResolve
         }
+
         self.docker = Docker(client: client, logger: logger)
     }
 
@@ -60,38 +68,17 @@ public final class GenericContainer {
     }
 
     public func start(retrieveHostInfo: Bool = false) -> EventLoopFuture<ContainerInspectInfo> {
-        if retrieveHostInfo {
-            let infoFuture = docker.info()
-            let versionFuture = infoFuture.and(docker.version())
-                .map { info, version in
-                    self.logger.info("🐳 Docker Info:")
-                    self.logger.info("→ Server Version: \(info.ServerVersion)")
-                    self.logger.info("→ API Version: \(version.ApiVersion)")
-                    self.logger.info("→ Operating System: \(info.OperatingSystem)")
-                    self.logger.info("→ Total Memory: \(info.MemTotal / (1024 * 1024)) MB")
-                    self.logger.info("→ Labels: \(info.Labels)")
-                }
+        let hostInfoFuture = retrieveHostInfo ? self.retrieveDockerInfo() : self.docker.client.eventLoop.makeSucceededFuture(())
 
-            return versionFuture.flatMap { _ in
+        let sideContainersFuture = EventLoopFuture.andAllSucceed(
+            sideContainers.map { $0.start() },
+            on: docker.client.eventLoop
+        )
+
+        return sideContainersFuture.flatMap { _ in
+            hostInfoFuture.flatMap { _ in
                 self.createContainer()
             }
-        }
-
-        return createContainer()
-    }
-
-    private func createContainer() -> EventLoopFuture<ContainerInspectInfo> {
-        docker.pull(params: self.imageParams).map { image in
-            return image
-        }.flatMap { _ in
-            self.docker.create(container: self.configuration).map { container in
-                self.container = container
-                return container
-            }
-        }.flatMap { container in
-            container.start().map { container }
-        }.flatMap { container in
-            container.inspect()
         }
     }
 
@@ -100,8 +87,49 @@ public final class GenericContainer {
             return docker.client.eventLoop.next().makeFailedFuture("Container not found")
         }
 
-        return container.stop().flatMap { _ in
-            container.remove()
+        let sideContainersFuture = EventLoopFuture.andAllSucceed(
+            sideContainers.map { $0.remove() },
+            on: docker.client.eventLoop
+        )
+
+        return sideContainersFuture.flatMap { _ in
+            container.stop().flatMap { _ in
+                container.remove()
+            }
         }
+    }
+
+    private func retrieveDockerInfo() -> EventLoopFuture<Void> {
+        let infoFuture = docker.info()
+        return infoFuture.and(docker.version())
+            .map { info, version in
+                self.logger.info("🐳 Docker Info:")
+                self.logger.info("→ Server Version: \(info.ServerVersion)")
+                self.logger.info("→ API Version: \(version.ApiVersion)")
+                self.logger.info("→ Operating System: \(info.OperatingSystem)")
+                self.logger.info("→ Total Memory: \(info.MemTotal / (1024 * 1024)) MB")
+                self.logger.info("→ Labels: \(info.Labels)")
+            }
+    }
+
+    private func createContainer() -> EventLoopFuture<ContainerInspectInfo> {
+        return docker.pull(params: self.imageParams).flatMap { _ in
+            return self.docker.create(container: self.configuration)
+        }.flatMap { container in
+            self.container = container
+            return container.start().flatMap { _ in
+                return container.inspect()
+            }
+        }
+    }
+}
+
+public extension GenericContainer {
+    func getSideContainer<T: SideContainer>() -> T? {
+        return sideContainers.first { $0 is T } as? T
+    }
+
+    func getSideContainers() -> [SideContainer] {
+        return sideContainers
     }
 }

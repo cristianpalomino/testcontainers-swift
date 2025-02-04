@@ -9,7 +9,18 @@ import Foundation
 import NIOCore
 import Logging
 
-final class Docker {
+public protocol DockerOperations {
+    var client: DockerClientProtocol { get }
+    var logger: Logger { get }
+
+    func ping() -> EventLoopFuture<Void>
+    func info() -> EventLoopFuture<Info>
+    func version() -> EventLoopFuture<Version>
+    func pull(params: DockerImageName) -> EventLoopFuture<Void>
+    func create(container configuration: ContainerConfig) -> EventLoopFuture<DockerContainerOperations>
+}
+
+final class Docker: DockerOperations {
     let client: DockerClientProtocol
     let logger: Logger
 
@@ -39,19 +50,18 @@ extension Docker {
         return client.send(request)
     }
 
-    func pull(params: DockerImageName) -> EventLoopFuture<Docker.Image> {
+    func pull(params: DockerImageName) -> EventLoopFuture<Void> {
         let request = Docker.Image.Request.Create(params: params)
         logger.info("🐳 Pulling image \(params.conventionName)...")
         return client.send(request)
-            .map { Docker.Image(params: params, client: self.client) }
     }
 
-    func create(container configuration: ContainerConfig) -> EventLoopFuture<Docker.Container> {
+    func create(container configuration: ContainerConfig) -> EventLoopFuture<DockerContainerOperations> {
         let request = Docker.Container.Request.Create(configuration: configuration)
         logger.debug("📦 Creating container using configuration: \(configuration)")
         return client.send(request).map {
             self.logger.info("📦 Created container: \($0.Id)")
-            return Docker.Container(id: $0.Id, client: self.client, logger: self.logger) 
+            return Docker.Container(id: $0.Id, client: self.client, logger: self.logger)
         }
     }
 }

@@ -18,7 +18,7 @@ public struct ContainerInfo: Decodable, Sendable {
     public let Labels: [String: String]
     public let State: String
     public let Status: String
-    public let HostConfig: HostConfig
+    public let HostConfig: HostConfig?
     public let NetworkSettings: NetworkSettings
     public let Mounts: [Mount]
 }
