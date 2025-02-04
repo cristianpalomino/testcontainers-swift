@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ContainerInspectInfo: Decodable {
+public struct ContainerInspectInfo: Decodable, Sendable {
     public let Id: String
     public let Created: String
     public let Path: String
@@ -35,7 +35,7 @@ public struct ContainerInspectInfo: Decodable {
 
 public extension ContainerInspectInfo {
     
-    struct State: Decodable {
+    struct State: Decodable, Sendable {
         public let Status: String
         public let Running: Bool
         public let Paused: Bool
@@ -49,7 +49,7 @@ public extension ContainerInspectInfo {
         public let FinishedAt: String
     }
     
-    struct HostConfig: Decodable {
+    struct HostConfig: Decodable, Sendable {
         public let Binds: [String]?
         public let ContainerIDFile: String
         public let LogConfig: LogConfig
@@ -115,34 +115,34 @@ public extension ContainerInspectInfo {
         public let ReadonlyPaths: [String]
     }
     
-    struct LogConfig: Decodable {
+    struct LogConfig: Decodable, Sendable {
         let `Type`: String
         public let Config: [String: String]
     }
     
-    struct PortBinding: Decodable {
+    struct PortBinding: Decodable, Sendable {
         public let HostIp: String
         public let HostPort: String
     }
     
-    struct RestartPolicy: Decodable {
+    struct RestartPolicy: Decodable, Sendable {
         public let Name: String
         public let MaximumRetryCount: Int
     }
     
-    struct GraphDriver: Decodable {
+    struct GraphDriver: Decodable, Sendable {
         public let Data: GraphDriverData?
         public let Name: String
     }
     
-    struct GraphDriverData: Decodable {
+    struct GraphDriverData: Decodable, Sendable {
         public let LowerDir: String
         public let MergedDir: String
         public let UpperDir: String
         public let WorkDir: String
     }
     
-    struct Mount: Decodable {
+    struct Mount: Decodable, Sendable {
         public let Name: String?
         public let `Type`: String
         public let Source: String
@@ -153,7 +153,7 @@ public extension ContainerInspectInfo {
         public let Propagation: String
     }
     
-    struct Config: Decodable {
+    struct Config: Decodable, Sendable {
         public let Hostname: String
         public let Domainname: String
         public let User: String
@@ -174,7 +174,7 @@ public extension ContainerInspectInfo {
         public let Labels: [String: String]
     }
     
-    struct NetworkSettings: Decodable {
+    struct NetworkSettings: Decodable, Sendable {
         public let Bridge: String
         public let SandboxID: String
         public let SandboxKey: String
@@ -195,7 +195,7 @@ public extension ContainerInspectInfo {
         public let Networks: [String: Network]
     }
     
-    struct Network: Decodable {
+    struct Network: Decodable, Sendable {
         public let IPAMConfig: String?
         public let Links: String?
         public let Aliases: String?

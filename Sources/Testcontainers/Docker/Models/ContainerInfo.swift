@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ContainerInfo: Decodable {
+public struct ContainerInfo: Decodable, Sendable {
     public let Id: String
     public let Names: [String]
     public let Image: String
@@ -25,22 +25,22 @@ public struct ContainerInfo: Decodable {
 
 public extension ContainerInfo {
     
-    struct HostConfig: Decodable {
+    struct HostConfig: Decodable, Sendable {
         public let NetworkMode: String
     }
     
-    struct Port: Decodable {
+    struct Port: Decodable, Sendable {
         public let IP: String
         public let PrivatePort: Int
         public let PublicPort: Int
         public let `Type`: String
     }
     
-    struct NetworkSettings: Decodable {
+    struct NetworkSettings: Decodable, Sendable {
         public let Networks: [String: NetworkInfo]
     }
     
-    struct NetworkInfo: Decodable {
+    struct NetworkInfo: Decodable, Sendable {
         public let IPAMConfig: String?
         public let Links: String?
         public let Aliases: String?
@@ -55,7 +55,7 @@ public extension ContainerInfo {
         public let MacAddress: String
     }
     
-    struct Mount: Decodable {
+    struct Mount: Decodable, Sendable {
         public let Name: String?
         public let `Type`: String
         public let Source: String

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct DockerImageName {
+public struct DockerImageName: Sendable {
 
     public let name: String
     public let tag: String
