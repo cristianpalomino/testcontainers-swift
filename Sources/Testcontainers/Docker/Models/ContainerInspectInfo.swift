@@ -165,11 +165,11 @@ public extension ContainerInspectInfo {
         public let OpenStdin: Bool
         public let StdinOnce: Bool
         public let Env: [String]
-        public let Cmd: [String]
+        public let Cmd: [String]?
         public let Image: String
 //        public let Volumes: [String: String]?
         public let WorkingDir: String
-        public let Entrypoint: [String]
+        public let Entrypoint: [String]?
         public let OnBuild: [String]?
         public let Labels: [String: String]
     }
